@@ -12,7 +12,6 @@ use Filament\Tables\Table as FilamentTable;
 class FormSubmissionResource extends Resource
 {
     protected static ?string $model = FormSubmission::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'Zgłoszenia';
     protected static ?string $navigationGroup = 'Admin';
@@ -34,26 +33,19 @@ class FormSubmissionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('first_name')
-                    ->label('Imię')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('last_name')
-                    ->label('Nazwisko')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
+                Tables\Columns\TextColumn::make('first_name')->label('Imię')->searchable(),
+                Tables\Columns\TextColumn::make('last_name')->label('Nazwisko')->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Data zgłoszenia')
                     ->dateTime('d-m-Y H:i')
                     ->sortable(),
             ])
-            ->filters([])
             ->actions([
-                Tables\Actions\ExportAction::make()
+                Tables\Actions\Action::make('export')
                     ->label('Eksportuj do Excela')
-                    ->fileName('form_submissions.xlsx')
-                    ->formats(['xlsx']),
+                    ->url(route('form_submissions.export'))
+                    ->openUrlInNewTab(), // otwiera w nowej karcie, aby pobranie pliku się powiodło
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
