@@ -4,40 +4,38 @@ namespace App\Filament\Widgets;
 use App\Models\Wedding;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Saade\FilamentFullCalendar\Actions\CreateAction;
-use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
 class WeddingCalendar extends FullCalendarWidget
 {
     protected static ?string $heading = 'Kalendarz Wesel';
 
-    // Metoda do pobierania wydarzeń
     public function fetchEvents(array $fetchInfo): array
-{
-    $start = $fetchInfo['start'] ?? null;
-    $end = $fetchInfo['end'] ?? null;
+    {
+        $start = $fetchInfo['start'] ?? null;
+        $end = $fetchInfo['end'] ?? null;
 
-    if ($start && $end) {
-        return Wedding::query()
-            ->where('data', '>=', $start) // Filtrujemy wesela po dacie początkowej
-            ->where('data', '<=', $end)   // Filtrujemy wesela po dacie końcowej
-            ->get()
-            ->map(fn (Wedding $wedding) => [
-                'id'    => (string) $wedding->id,
-                'title' => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->sala}",
-                'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
-                'allDay' => true, // Zapewnia, że wydarzenie trwa cały dzień
-                'color' => empty($wedding->sala) || empty($wedding->typ_wesela) || empty($wedding->koscol) || empty($wedding->liczba_gosci)
-                    ? '#5F61FF'  // Pomarańczowy (jeśli brakuje danych)
-                    : 'green', // Niebieski (jeśli wszystko jest uzupełnione)
-            ])
-            ->toArray();
+        if ($start && $end) {
+            return Wedding::query()
+                ->where('data', '>=', $start)
+                ->where('data', '<=', $end)
+                ->get()
+                ->map(fn (Wedding $wedding) => [
+                    'id'    => (string) $wedding->id,
+                    'title' => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->sala}",
+                    'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
+                    'allDay' => true,
+                    'color' => empty($wedding->sala) || empty($wedding->typ_wesela) || empty($wedding->koscol) || empty($wedding->liczba_gosci)
+                        ? '#4881f6'
+                        : '#27bd41',
+                ])
+                ->toArray();
+        }
+
+        return [];
     }
 
-    return [];
-}
-
-    // Dodajemy akcję CreateAction dla dodawania wesela po kliknięciu na kalendarz
+    // Usuwamy akcję edycji – pozostawiamy tylko CreateAction
     public function getActions(): array
     {
         return [
@@ -46,7 +44,7 @@ class WeddingCalendar extends FullCalendarWidget
                     \Filament\Forms\Components\DatePicker::make('date')
                         ->label('Data wesela')
                         ->required()
-                        ->default(now()->toDateString()), // Domyślna data na dzisiaj
+                        ->default(now()->toDateString()),
                 ])
                 ->mutateFormDataUsing(fn (array $data): array => [
                     'date' => $data['date'],
@@ -57,15 +55,14 @@ class WeddingCalendar extends FullCalendarWidget
         ];
     }
 
-    // Akcje do tworzenia, edytowania i aktualizowania wydarzeń
-    protected function createEvent(array $data): Model
+    protected function createEvent(array $data): \Illuminate\Database\Eloquent\Model
     {
         return Wedding::create([
             'date' => $data['start'],
         ]);
     }
 
-    protected function editEvent(Model $record, array $data): Model
+    protected function editEvent(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
         $record->update([
             'date' => $data['start'],
@@ -73,7 +70,7 @@ class WeddingCalendar extends FullCalendarWidget
         return $record;
     }
 
-    protected function updateEvent(Model $record, array $data): Model
+    protected function updateEvent(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
     {
         $record->update([
             'date' => $data['start'],
@@ -81,14 +78,38 @@ class WeddingCalendar extends FullCalendarWidget
         return $record;
     }
 
-    // Ustawiamy konfigurację kalendarza
+    public function eventDidMount(): string
+    {
+        return <<<JS
+            function({ event, timeText, isStart, isEnd, isMirror, isPast, isFuture, isToday, el, view }){
+                el.setAttribute("x-tooltip", "tooltip");
+                el.setAttribute("x-data", "{ tooltip: '"+event.title+"' }");
+                // Blokujemy kliknięcie, zatrzymując propagację zdarzenia
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                });
+            }
+        JS;
+    }
+    
+
     public function config(): array
     {
         return [
-            'events' => $this->fetchEvents([]),  // Zgodnie z metodą fetchEvents
-            'select' => true,  // Możliwość kliknięcia w datę
-            'selectHelper' => true,  // Pomaga przy kliknięciu
-            'selectOverlap' => false,  // Nie pozwala na nakładanie się wydarzeń
+            'events' => $this->fetchEvents([]),
+            'select' => true,
+            'selectHelper' => true,
+            'selectOverlap' => false,
+            'eventDrop' => 'refreshCalendar',
+            'eventResize' => 'refreshCalendar',
+            'firstDay' => 1,
+            'headerToolbar' => [
+                'left' => 'dayGridWeek,dayGridDay',
+                'center' => 'title',
+                'right' => 'prev,next today',
+            ],
         ];
     }
 }

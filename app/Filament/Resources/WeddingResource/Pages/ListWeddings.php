@@ -20,7 +20,7 @@ class ListWeddings extends ListRecords
             ->label('Dodaj Wesele') 
             ->color('success'), 
             Actions\Action::make('quickAddWedding')
-                ->label('Dodaj Szybkie Wesele')
+                ->label('Rezerwuj Termin')
                 ->icon('heroicon-o-plus-circle')
                 ->modalHeading('Dodaj szybkie wesele')
                 ->color("info")

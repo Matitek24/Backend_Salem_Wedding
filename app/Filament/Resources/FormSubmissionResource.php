@@ -49,7 +49,8 @@ class FormSubmissionResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                ->label('Usuń elementy'),
             ])
             ->defaultSort('created_at', 'desc');
     }

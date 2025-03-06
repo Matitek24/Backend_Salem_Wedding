@@ -40,38 +40,35 @@ class WeddingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('imie1')
-                ->label('Panna Młoda')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('imie2')
-                ->label('Pan Młody')
-                ->sortable(),
-            Tables\Columns\TextColumn::make('data')
-                ->label('Data Wesela')
-                ->sortable(),
-        ])
-        ->filters([])
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\Action::make('quickAddWedding')
-                ->label('Szybkie wesele')
-                ->icon('heroicon-o-plus-circle')
-                ->form([
-                    \Filament\Forms\Components\TextInput::make('imie1')->label('Imię Panny Młodej')->required(),
-                    \Filament\Forms\Components\TextInput::make('imie2')->label('Imię Pana Młodego')->required(),
-                    \Filament\Forms\Components\DatePicker::make('data')->label('Data Wesela')->required(),
-                ])
-                ->action(function (array $data) {
-                    Wedding::create($data);
-                })
-                ->successNotificationTitle('Wesele dodane!'),
-        ])
-        ->bulkActions([
-            Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]),
-        ]);
+            ->columns([
+                Tables\Columns\TextColumn::make('imie1')
+                    ->label('Panna Młoda')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('imie2')
+                    ->label('Pan Młody')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('data')
+                    ->label('Data Wesela')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('liczba_gosci')
+                    ->label('Liczba Gości')
+                    ->sortable()
+                    ->color(fn ($state) => $state == 0 ? 'danger' : 'default'), 
+            ])
+            ->filters([])
+            ->actions([
+                Tables\Actions\Action::make('export')
+                    ->label('Eksportuj do Excela')
+                    ->url(route('weddings.export'))
+                    ->openUrlInNewTab(), // otwiera w nowej karcie, aby pobranie pliku się powiodło
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                    Tables\Actions\DeleteBulkAction::make()
+                    ->label('Usuń elementy'),
+            ]);
+            
+            
     }
 
     public static function getRelations(): array
