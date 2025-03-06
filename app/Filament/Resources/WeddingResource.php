@@ -14,7 +14,9 @@ use Filament\Tables\Table;
 class WeddingResource extends Resource
 {
     protected static ?string $model = Wedding::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationLabel = 'Wesela';
+    protected static ?string $navigationGroup = 'Admin';
 
     public static function form(Form $form): Form
     {
