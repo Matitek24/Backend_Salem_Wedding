@@ -5,6 +5,7 @@ use App\Models\Wedding;
 use Saade\FilamentFullCalendar\Widgets\FullCalendarWidget;
 use Saade\FilamentFullCalendar\Actions\CreateAction;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class WeddingCalendar extends FullCalendarWidget
 {
@@ -12,25 +13,29 @@ class WeddingCalendar extends FullCalendarWidget
 
     // Metoda do pobierania wydarzeń
     public function fetchEvents(array $fetchInfo): array
-    {
-        $start = isset($fetchInfo['start']) ? $fetchInfo['start'] : null;
-        $end = isset($fetchInfo['end']) ? $fetchInfo['end'] : null;
+{
+    $start = $fetchInfo['start'] ?? null;
+    $end = $fetchInfo['end'] ?? null;
 
-        if ($start && $end) {
-            return Wedding::query()
-                ->where('date', '>=', $start) // Filtrujemy wesela po dacie początkowej
-                ->where('date', '<=', $end)   // Filtrujemy wesela po dacie końcowej
-                ->get()
-                ->map(fn (Wedding $wedding) => [
-                    'id'    => (string) $wedding->id,
-                    'title' => 'Wesele ' . $wedding->id,
-                    'start' => \Carbon\Carbon::parse($wedding->date)->format('Y-m-d'),
-                ])
-                ->toArray();
-        }
-
-        return [];
+    if ($start && $end) {
+        return Wedding::query()
+            ->where('data', '>=', $start) // Filtrujemy wesela po dacie początkowej
+            ->where('data', '<=', $end)   // Filtrujemy wesela po dacie końcowej
+            ->get()
+            ->map(fn (Wedding $wedding) => [
+                'id'    => (string) $wedding->id,
+                'title' => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->sala}",
+                'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
+                'allDay' => true, // Zapewnia, że wydarzenie trwa cały dzień
+                'color' => empty($wedding->sala) || empty($wedding->typ_wesela) || empty($wedding->koscol) || empty($wedding->liczba_gosci)
+                    ? '#5F61FF'  // Pomarańczowy (jeśli brakuje danych)
+                    : 'green', // Niebieski (jeśli wszystko jest uzupełnione)
+            ])
+            ->toArray();
     }
+
+    return [];
+}
 
     // Dodajemy akcję CreateAction dla dodawania wesela po kliknięciu na kalendarz
     public function getActions(): array
