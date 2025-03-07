@@ -13,6 +13,7 @@ class FormController extends Controller
         $validated = $request->validate([
             'firstName'         => 'required|string|max:255',
             'lastName'          => 'required|string|max:255',
+            'email'             => 'required|email|max:255',
             'weddingDate'       => 'required|date',
             'weddingLocation'   => 'required|string|max:255',
             'marriageLocation'  => 'required|string|max:255',
@@ -22,6 +23,7 @@ class FormController extends Controller
         $submission = FormSubmission::create([
             'first_name'        => $validated['firstName'],
             'last_name'         => $validated['lastName'],
+            'email'             => $validated['email'],
             'wedding_date'      => $validated['weddingDate'],
             'wedding_location'  => $validated['weddingLocation'],
             'marriage_location' => $validated['marriageLocation'],

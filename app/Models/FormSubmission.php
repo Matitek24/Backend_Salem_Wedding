@@ -12,6 +12,7 @@ class FormSubmission extends Model
     protected $fillable = [
         'first_name',
         'last_name',
+        'email',
         'wedding_date',
         'wedding_location',
         'marriage_location',
