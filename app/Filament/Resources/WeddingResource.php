@@ -1,5 +1,5 @@
 <?php
-
+// -------------  ZASOBY WEDDING TZN FORMULARZ TWORZENIAS WYSWIETLANIE TABELI --------------------
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WeddingResource\Pages;
@@ -14,7 +14,7 @@ use Filament\Tables\Table;
 class WeddingResource extends Resource
 {
     protected static ?string $model = Wedding::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationLabel = 'Wesela';
     protected static ?string $navigationGroup = 'Admin';
 

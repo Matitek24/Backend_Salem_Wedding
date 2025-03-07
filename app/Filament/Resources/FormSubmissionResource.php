@@ -1,5 +1,5 @@
 <?php
-
+// ------------- ZASOBY BAZY DANYCH STATYSTYCZNEJ TABELA FORMULARZ--------------------
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\FormSubmissionResource\Pages;
@@ -12,7 +12,7 @@ use Filament\Tables\Table as FilamentTable;
 class FormSubmissionResource extends Resource
 {
     protected static ?string $model = FormSubmission::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Zgłoszenia';
     protected static ?string $navigationGroup = 'Admin';
 

@@ -5,7 +5,7 @@ namespace App\Filament\Resources\WeddingResource\Pages;
 use App\Filament\Resources\WeddingResource;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Actions;
-use App\Filament\Widgets\WeddingCalendar; // Importujemy kalendarz
+use App\Filament\Widgets\WeddingCalendar; 
 use App\Models\Wedding;
 
 class ListWeddings extends ListRecords
@@ -15,12 +15,9 @@ class ListWeddings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-            ->icon('heroicon-o-plus-circle')
-            ->label('Dodaj Wesele') 
-            ->color('success'), 
+    
             Actions\Action::make('quickAddWedding')
-                ->label('Rezerwuj Termin')
+                ->label('Dodaj Wesele')
                 ->icon('heroicon-o-plus-circle')
                 ->modalHeading('Dodaj szybkie wesele')
                 ->color("info")
@@ -43,6 +40,10 @@ class ListWeddings extends ListRecords
                     ]);
                 })
                 ->successNotificationTitle('Wesele dodane!'),
+                Actions\CreateAction::make()
+                ->icon('heroicon-o-plus-circle')
+                ->label('Dodaj Wesele (Informacje)') 
+                ->color('success'), 
         ];
     }
 

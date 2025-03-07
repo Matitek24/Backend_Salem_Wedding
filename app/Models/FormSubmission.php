@@ -9,5 +9,11 @@ class FormSubmission extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['first_name', 'last_name'];
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'wedding_date',
+        'wedding_location',
+        'marriage_location',
+    ];
 }

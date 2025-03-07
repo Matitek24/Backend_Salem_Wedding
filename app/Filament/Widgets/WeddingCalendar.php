@@ -1,5 +1,5 @@
 <?php
-
+// -------------  KALENDARZ KOMPONENT SAMEGO KALENDARZA --------------------
 namespace App\Filament\Widgets;
 
 use App\Models\Wedding;
