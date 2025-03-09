@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.8",
         "maatwebsite/excel": "^3.1",
         "saade/filament-fullcalendar": "^3.2",
+        "spatie/image": "^3.8",
         "spatie/simple-excel": "^3.7"
     },
     "require-dev": {
