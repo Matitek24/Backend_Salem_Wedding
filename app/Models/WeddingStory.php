@@ -17,7 +17,9 @@ class WeddingStory extends Model
         'youtube_link',
         'gallery_link',
         'access_code',
+        'is_public',
     ];
+    
 
     // Automatyczne szyfrowanie przy zapisie
     public function setAccessCodeAttribute($value)

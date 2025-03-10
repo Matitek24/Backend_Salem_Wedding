@@ -12,13 +12,22 @@ class WeddingStoryController extends Controller
 {
     public function index()
     {
-        $stories = WeddingStory::all()->map(function ($story) {
+        $publicStories = WeddingStory::where('is_public', true)->get()->map(function ($story) {
             $story->thumbnail = $story->thumbnail ? url('storage/' . $story->thumbnail) : null;
             return $story;
         });
-
-        return response()->json($stories);
+    
+        $privateStories = WeddingStory::where('is_public', false)->get()->map(function ($story) {
+            $story->thumbnail = $story->thumbnail ? url('storage/' . $story->thumbnail) : null;
+            return $story;
+        });
+    
+        return response()->json([
+            'public_stories' => $publicStories,
+            'private_stories' => $privateStories,
+        ]);
     }
+    
 
     public function store(Request $request)
     {

@@ -29,6 +29,14 @@ class WeddingStoryResource extends Resource
             Forms\Components\TextInput::make('youtube_link')->url(),
             Forms\Components\TextInput::make('gallery_link')->url(),
             Forms\Components\TextInput::make('access_code')->required(),
+            Forms\Components\Radio::make('is_public')
+                ->label('Czy historia jest publiczna?')
+                ->options([
+                    1 => 'Tak',
+                    0 => 'Nie'
+                ])
+                ->default(0)
+                ->inline(),
         ]);
     }
 
@@ -37,6 +45,7 @@ class WeddingStoryResource extends Resource
         return $table->columns([
             Tables\Columns\TextColumn::make('couple_names')->sortable()->searchable(),
             Tables\Columns\TextColumn::make('description')->limit(50),
+            Tables\Columns\BooleanColumn::make('is_public')->label('Publiczna'),
         ])->filters([
 
         ])->actions([
