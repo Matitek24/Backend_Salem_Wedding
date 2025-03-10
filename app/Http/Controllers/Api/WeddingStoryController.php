@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\WeddingStory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Hash;
-use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Crypt;
 
 class WeddingStoryController extends Controller
 {
     public function index()
     {
-        return response()->json(WeddingStory::all());
+        $stories = WeddingStory::all()->map(function ($story) {
+            $story->thumbnail = $story->thumbnail ? url('storage/' . $story->thumbnail) : null;
+            return $story;
+        });
+
+        return response()->json($stories);
     }
 
     public function store(Request $request)
@@ -31,16 +34,20 @@ class WeddingStoryController extends Controller
         $validated['access_code'] = Crypt::encryptString($validated['access_code']);
 
         if ($request->hasFile('thumbnail')) {
-            $validated['thumbnail'] = FileUploadService::uploadThumbnail($request->file('thumbnail'));
+            $path = $request->file('thumbnail')->store('uploads/wedding_thumbnails', 'public');
+            $validated['thumbnail'] = $path;
         }
 
         $story = WeddingStory::create($validated);
+        $story->thumbnail = url('storage/' . $story->thumbnail);
 
         return response()->json($story, 201);
     }
 
     public function show(WeddingStory $weddingStory)
     {
+        $weddingStory->thumbnail = $weddingStory->thumbnail ? url('storage/' . $weddingStory->thumbnail) : null;
+
         return response()->json($weddingStory);
     }
 
@@ -55,26 +62,29 @@ class WeddingStoryController extends Controller
             'access_code'    => 'sometimes|string|max:255',
         ]);
 
-        // Jeśli podano nowy kod, hashujemy go przed zapisem
         if ($request->has('access_code')) {
             $validated['access_code'] = Crypt::encryptString($validated['access_code']);
         }
 
         if ($request->hasFile('thumbnail')) {
+            // Usunięcie starego pliku, jeśli istnieje
             if ($weddingStory->thumbnail) {
                 Storage::disk('public')->delete($weddingStory->thumbnail);
             }
-            $validated['thumbnail'] = FileUploadService::uploadThumbnail($request->file('thumbnail'));
+
+            // Przechowywanie nowego zdjęcia
+            $path = $request->file('thumbnail')->store('uploads/wedding_thumbnails', 'public');
+            $validated['thumbnail'] = $path;
         }
 
         $weddingStory->update($validated);
+        $weddingStory->thumbnail = $weddingStory->thumbnail ? url('storage/' . $weddingStory->thumbnail) : null;
 
         return response()->json($weddingStory);
     }
 
     public function destroy(WeddingStory $weddingStory)
     {
-        // Usuwamy plik przy wywołaniu kontrolera
         if ($weddingStory->thumbnail) {
             Storage::disk('public')->delete($weddingStory->thumbnail);
         }
