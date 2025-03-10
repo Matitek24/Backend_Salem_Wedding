@@ -31,8 +31,6 @@ class WeddingStoryController extends Controller
             'access_code'    => 'required|string|max:255',
         ]);
 
-        $validated['access_code'] = Crypt::encryptString($validated['access_code']);
-
         if ($request->hasFile('thumbnail')) {
             $path = $request->file('thumbnail')->store('uploads/wedding_thumbnails', 'public');
             $validated['thumbnail'] = $path;
@@ -62,17 +60,10 @@ class WeddingStoryController extends Controller
             'access_code'    => 'sometimes|string|max:255',
         ]);
 
-        if ($request->has('access_code')) {
-            $validated['access_code'] = Crypt::encryptString($validated['access_code']);
-        }
-
         if ($request->hasFile('thumbnail')) {
-            // Usunięcie starego pliku, jeśli istnieje
             if ($weddingStory->thumbnail) {
                 Storage::disk('public')->delete($weddingStory->thumbnail);
             }
-
-            // Przechowywanie nowego zdjęcia
             $path = $request->file('thumbnail')->store('uploads/wedding_thumbnails', 'public');
             $validated['thumbnail'] = $path;
         }
@@ -92,5 +83,27 @@ class WeddingStoryController extends Controller
         $weddingStory->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function checkAccessCode(Request $request, $id)
+    {
+        $weddingStory = WeddingStory::find($id);
+
+        if (!$weddingStory) {
+            return response()->json(['message' => 'Historia nie istnieje'], 404);
+        }
+
+        $inputCode = $request->input('access_code');
+
+        try {
+            $decryptedCode = $weddingStory->access_code; // Model automatycznie deszyfruje kod
+            if ($inputCode === $decryptedCode) {
+                return response()->json(['success' => true]);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Błędny kod'], 403);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Błąd deszyfrowania '], 500);
+        }
     }
 }

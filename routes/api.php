@@ -26,3 +26,4 @@ Route::prefix('wedding-stories')->group(function () {
     Route::put('/{weddingStory}', [WeddingStoryController::class, 'update']); // Aktualizuje historię
     Route::delete('/{weddingStory}', [WeddingStoryController::class, 'destroy']); // Usuwa historię
 });
+Route::post('/wedding-stories/{id}/check-access', [WeddingStoryController::class, 'checkAccessCode']);
