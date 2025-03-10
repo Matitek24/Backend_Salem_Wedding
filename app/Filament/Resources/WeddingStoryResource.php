@@ -37,12 +37,8 @@ class WeddingStoryResource extends Resource
         return $table->columns([
             Tables\Columns\TextColumn::make('couple_names')->sortable()->searchable(),
             Tables\Columns\TextColumn::make('description')->limit(50),
-            Tables\Columns\ImageColumn::make('thumbnail'),
-            Tables\Columns\TextColumn::make('youtube_link'),
-            Tables\Columns\TextColumn::make('gallery_link'),
-            Tables\Columns\TextColumn::make('access_code')->limit(10),
         ])->filters([
-            // Tu można dodać filtry
+
         ])->actions([
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),

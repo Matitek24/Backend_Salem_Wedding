@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use App\Services\FileUploadService;
+use Illuminate\Support\Facades\Crypt;
 
 class WeddingStoryController extends Controller
 {
@@ -27,8 +28,7 @@ class WeddingStoryController extends Controller
             'access_code'    => 'required|string|max:255',
         ]);
 
-        // Hashujemy access_code przed zapisem
-        $validated['access_code'] = Hash::make($validated['access_code']);
+        $validated['access_code'] = Crypt::encryptString($validated['access_code']);
 
         if ($request->hasFile('thumbnail')) {
             $validated['thumbnail'] = FileUploadService::uploadThumbnail($request->file('thumbnail'));
@@ -57,7 +57,7 @@ class WeddingStoryController extends Controller
 
         // Jeśli podano nowy kod, hashujemy go przed zapisem
         if ($request->has('access_code')) {
-            $validated['access_code'] = Hash::make($validated['access_code']);
+            $validated['access_code'] = Crypt::encryptString($validated['access_code']);
         }
 
         if ($request->hasFile('thumbnail')) {
