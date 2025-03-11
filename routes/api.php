@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\WeddingController;
 use App\Http\Controllers\Api\WeddingStoryController;
+use App\Http\Controllers\Api\GalleryController;
 
 
 Route::post('/submit-form', [FormController::class, 'store']);
@@ -27,3 +28,7 @@ Route::prefix('wedding-stories')->group(function () {
     Route::delete('/{weddingStory}', [WeddingStoryController::class, 'destroy']); // Usuwa historię
 });
 Route::post('/wedding-stories/{id}/check-access', [WeddingStoryController::class, 'checkAccessCode']);
+
+
+
+Route::get('/gallery', [GalleryController::class, 'index']);
