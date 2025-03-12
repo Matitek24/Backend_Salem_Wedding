@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\WeddingController;
 use App\Http\Controllers\Api\WeddingStoryController;
 use App\Http\Controllers\Api\GalleryController;
+use App\Http\Controllers\Api\BannerController;
 
 
 Route::post('/submit-form', [FormController::class, 'store']);
@@ -32,3 +33,9 @@ Route::post('/wedding-stories/{id}/check-access', [WeddingStoryController::class
 
 
 Route::get('/gallery', [GalleryController::class, 'index']);
+
+
+
+Route::get('/banners', [BannerController::class, 'index']); // Pobiera listę banerów
+Route::post('/banners', [BannerController::class, 'store']); // Dodaje nowy baner
+Route::delete('/banners/{id}', [BannerController::class, 'destroy']); // Usuwa baner

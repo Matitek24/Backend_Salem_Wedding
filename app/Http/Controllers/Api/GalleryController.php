@@ -19,7 +19,6 @@ class GalleryController extends Controller
             ->orderBy('order')
             ->get()
             ->map(function ($image) {
-                // Jeśli `image_path` istnieje, dodaj pełny URL do pliku w `storage/`
                 $image->image_path = $image->image_path ? url('storage/' . $image->image_path) : null;
                 return $image;
             });

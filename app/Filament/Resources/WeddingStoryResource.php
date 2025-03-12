@@ -14,7 +14,7 @@ class WeddingStoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-camera';
     protected static ?string $navigationLabel = 'Historie';
-    protected static ?string $navigationGroup = 'Admin';
+    protected static ?string $navigationGroup = 'CMS Zarządzanie';
 
     public static function form(Forms\Form $form): Forms\Form
     {
