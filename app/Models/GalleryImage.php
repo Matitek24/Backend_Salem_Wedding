@@ -8,8 +8,14 @@ use Illuminate\Support\Facades\Storage;
 
 class GalleryImage extends Model
 {
-    protected $fillable = ['image_path', 'order', 'category_id']; 
+    use HasFactory;
 
+    protected $fillable = ['category_id', 'image_path', 'order'];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
     protected static function boot()
     {
         parent::boot();

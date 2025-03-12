@@ -14,7 +14,7 @@ use Filament\Tables\Table;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-    protected static ?string $navigationLabel = 'Kategorie Portfolio';
+    protected static ?string $navigationLabel = 'Portfolio';
     protected static ?string $pluralModelLabel = 'Kategorie';
     protected static ?string $modelLabel = 'Kategoria';
     protected static ?string $navigationIcon = 'heroicon-o-photo';
