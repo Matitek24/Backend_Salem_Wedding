@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use WebPConvert\WebPConvert;
 
 class GalleryImage extends Model
 {
@@ -16,6 +17,7 @@ class GalleryImage extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
+    
     protected static function boot()
     {
         parent::boot();
@@ -24,6 +26,13 @@ class GalleryImage extends Model
             $maxOrder = static::where('category_id', $image->category_id)->max('order');
             $image->order = $maxOrder + 1;
         });
+
+        // static::saved(function ($image) {
+        //     if ($image->image_path) {
+        //         // Dispatch joba do optymalizacji obrazu
+        //         dispatch(new \App\Jobs\OptimizeImageJob($image));
+        //     }
+        // });
 
         static::deleting(function ($image) {
             if ($image->image_path) {

@@ -9,7 +9,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 
 class BannerResource extends Resource
@@ -26,6 +25,7 @@ class BannerResource extends Resource
         return $form->schema([
             FileUpload::make('image')
                 ->image()
+                ->maxSize(8192)
                 ->directory('banners')
                 ->required()
                 ->label('Zdjęcie')
@@ -34,7 +34,7 @@ class BannerResource extends Resource
             Select::make('page')
                 ->label('Podstrona')
                 ->options([
-                    'home' => 'Strona Główna',
+                    'index' => 'Strona Główna',
                     'onas' => 'O Nas',
                     'kontakt' => 'Kontakt',
                     'oferta' => 'Oferta',
@@ -59,8 +59,14 @@ class BannerResource extends Resource
             ")
             ->html(),
         TextColumn::make('page')->label('Podstrona'),
+    ])
+    ->actions([
+        Tables\Actions\EditAction::make(),
+        Tables\Actions\DeleteAction::make(),
+    ])
+    ->bulkActions([
+        Tables\Actions\DeleteBulkAction::make(),
     ]);
-        
     }
 
     public static function getPages(): array

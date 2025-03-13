@@ -27,7 +27,7 @@ class BannerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'image' => ['required', File::image()->max(5 * 1024)], // max 5MB
+            'image' => ['required', File::image()->max(10 * 1024)], // max 10MB
             'page' => 'required|string|max:255',
         ]);
 
