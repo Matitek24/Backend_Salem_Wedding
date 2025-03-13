@@ -63,7 +63,22 @@ class BannerResource extends Resource
     ->actions([
         Tables\Actions\EditAction::make(),
         Tables\Actions\DeleteAction::make(),
+        Tables\Actions\Action::make('optimize')
+            ->icon('heroicon-s-pencil')
+            ->label('webp')
+            ->visible(function ($record) {
+                // Ukryj przycisk, jeśli plik ma rozszerzenie .webp
+                return !preg_match('/\.webp$/i', $record->image);
+            })
+            ->action(function ($record) {
+                dispatch(new \App\Jobs\OptimizeBannerJob($record));
+                \Filament\Notifications\Notification::make()
+                    ->title('Optymalizacja została uruchomiona.')
+                    ->success()
+                    ->send();
+            }),
     ])
+    
     ->bulkActions([
         Tables\Actions\DeleteBulkAction::make(),
     ]);

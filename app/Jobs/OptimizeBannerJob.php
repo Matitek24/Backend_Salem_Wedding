@@ -8,44 +8,45 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use WebPConvert\WebPConvert;
-use App\Models\GalleryImage;
+use App\Models\Banner;
 
-class OptimizeImageJob implements ShouldQueue
+class OptimizeBannerJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $galleryImage;
-    
-    public function __construct(GalleryImage $galleryImage)
+    protected $banner;
+
+    public function __construct(Banner $banner)
     {
-        $this->galleryImage = $galleryImage;
+        $this->banner = $banner;
     }
-    
+
     public function handle()
     {
-        set_time_limit(300); // Ustawia maksymalny czas wykonania na 5 minut
-        $originalPath = storage_path('app/public/' . $this->galleryImage->image_path);
-        // Sprawdzamy, czy plik istnieje oraz nie jest już WebP
+        set_time_limit(300); // Maksymalny czas wykonania: 5 minut
+
+        $originalPath = storage_path('app/public/' . $this->banner->image);
+
+        // Sprawdzamy, czy plik istnieje i czy nie jest już w formacie WebP
         if (file_exists($originalPath) && strtolower(pathinfo($originalPath, PATHINFO_EXTENSION)) !== 'webp') {
             $directory = pathinfo($originalPath, PATHINFO_DIRNAME);
             $filename = pathinfo($originalPath, PATHINFO_FILENAME);
             $outputPath = $directory . '/' . $filename . '.webp';
-            
+
             try {
                 // Konwersja do WebP z jakością 50%
                 WebPConvert::convert($originalPath, $outputPath, [
-                    'converter' => 'cwebp',
-                    'quality' => 70,
+                    'quality' => 50,
                 ]);
-                
+
                 // Usuwamy oryginalny plik
                 if (file_exists($originalPath)) {
                     unlink($originalPath);
                 }
-                
-                // Aktualizujemy ścieżkę w modelu
-                $this->galleryImage->image_path = preg_replace('/\.[^.]+$/', '.webp', $this->galleryImage->image_path);
-                $this->galleryImage->saveQuietly();
+
+                // Aktualizacja ścieżki w modelu, aby wskazywała na plik .webp
+                $this->banner->image = preg_replace('/\.[^.]+$/', '.webp', $this->banner->image);
+                $this->banner->saveQuietly();
             } catch (\Exception $e) {
                 \Log::error('Błąd konwersji obrazu do WebP: ' . $e->getMessage());
             }

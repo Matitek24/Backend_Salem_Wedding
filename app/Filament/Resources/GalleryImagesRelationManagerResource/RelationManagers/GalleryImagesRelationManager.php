@@ -8,6 +8,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\Layout\Grid;
+use Filament\Notifications\Notification;
 
 class GalleryImagesRelationManager extends RelationManager
 {
@@ -15,17 +16,6 @@ class GalleryImagesRelationManager extends RelationManager
     protected static ?string $recordTitleAttribute = 'image_path';
     protected static ?string $label = 'Galeria';
     protected static ?string $pluralLabel = 'Galerie';
-
-    public function form(Form $form): Form
-    {
-        return $form->schema([
-            Forms\Components\FileUpload::make('image_path')
-                ->image()
-                ->directory('gallery-images')
-                ->required()
-                ->label('Zdjęcie'),
-        ]);
-    }
 
     public function table(Table $table): Table
     {
@@ -37,7 +27,7 @@ class GalleryImagesRelationManager extends RelationManager
                 'xl' => 4, // 5 kolumn na większych ekranach
             ])
             ->columns([
-                Grid::make(1) // 3 kolumny w siatce
+                Grid::make(1)
                     ->schema([
                         Tables\Columns\TextColumn::make('image_path')
                             ->label('Miniatura')
@@ -52,9 +42,23 @@ class GalleryImagesRelationManager extends RelationManager
             ->defaultSort('order')
             ->reorderable('order')
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('optimize')
+                ->icon('heroicon-s-pencil')
+                    ->label('webp')
+                    ->visible(function ($record) {
+                        // Sprawdza, czy nazwa pliku nie kończy się na .webp (ignorując wielkość liter)
+                        return !preg_match('/\.webp$/i', $record->image_path);
+                    })
+                    ->action(function ($record) {
+                        dispatch(new \App\Jobs\OptimizeImageJob($record));
+                        \Filament\Notifications\Notification::make()
+                            ->title('Optymalizacja została uruchomiona.')
+                            ->success()
+                            ->send();
+                    }),
             ])
+            
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->label('Dodaj Zdjęcia')
@@ -72,8 +76,7 @@ class GalleryImagesRelationManager extends RelationManager
                                 'image_path' => $file,
                             ]);
                         }
-                    })                    
-                    
+                    }),
             ]);
     }
 }
