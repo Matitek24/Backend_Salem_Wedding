@@ -1,5 +1,5 @@
 <?php
-// -------------  ZASOBY WEDDING TZN FORMULARZ TWORZENIAS WYSWIETLANIE TABELI --------------------
+// -------------  ZASOBY WEDDING TZN FORMULARZ TWORZENIA I WYŚWIETLANIA TABELI --------------------
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\WeddingResource\Pages;
@@ -24,6 +24,8 @@ class WeddingResource extends Resource
         ->schema([
             Forms\Components\TextInput::make('imie1')->label('Imię Panny Młodej')->required(),
             Forms\Components\TextInput::make('imie2')->label('Imię Pana Młodego')->required(),
+            Forms\Components\TextInput::make('telefon_panny')->label('Telefon Panny Młodej')->required(),
+            Forms\Components\TextInput::make('telefon_pana')->label('Telefon Pana Młodego')->required(),
             Forms\Components\DatePicker::make('data')->label('Data Wesela')->required(),
             Forms\Components\Select::make('typ_wesela')
                 ->label('Typ Wesela')
@@ -36,6 +38,29 @@ class WeddingResource extends Resource
             Forms\Components\TextInput::make('sala')->label('Sala Weselna')->default(''),
             Forms\Components\TextInput::make('koscol')->label('Kościół')->default(''),
             Forms\Components\TextInput::make('liczba_gosci')->label('Liczba Gości')->numeric()->default(0),
+            Forms\Components\Select::make('pakiet')
+                ->label('Pakiet')
+                ->options([
+                    'film' => 'Film',
+                    'foto' => 'Foto',
+                    'fot+film' => 'Fot+Film',
+                    'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
+                    'foto+fotoplener' => 'Foto+Fotoplener',
+                ])
+                ->required(),
+            Forms\Components\Select::make('typ_zamowienia')
+                ->label('Typ Zamówienia')
+                ->options([
+                    'rezerwacja' => 'Rezerwacja',
+                    'umowa' => 'Wesele Umowa',
+                ])
+                ->default('umowa')
+                ->required(),
+            Forms\Components\Textarea::make('uwagi')
+                ->label('Uwagi')
+                ->rows(3)
+                ->placeholder('Dodaj dodatkowe informacje')
+                ->maxLength(500),
         ]);
     }
 
@@ -52,25 +77,27 @@ class WeddingResource extends Resource
                 Tables\Columns\TextColumn::make('data')
                     ->label('Data Wesela')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('liczba_gosci')
-                    ->label('Liczba Gości')
-                    ->sortable()
-                    ->color(fn ($state) => $state == 0 ? 'danger' : 'default'), 
+                // Tables\Columns\TextColumn::make('liczba_gosci')
+                //     ->label('Liczba Gości')
+                //     ->sortable()
+                //     ->color(fn ($state) => $state == 0 ? 'danger' : 'default'),
+                // Nowe kolumny (opcjonalnie)
+                Tables\Columns\TextColumn::make('typ_zamowienia')
+                    ->label('Typ Zamówienia')
+                    ->color(fn ($state) => $state == "rezerwacja" ? 'danger' : 'default'),
             ])
             ->filters([])
             ->actions([
                 Tables\Actions\Action::make('export')
                     ->label('Eksportuj do Excela')
                     ->url(route('weddings.export'))
-                    ->openUrlInNewTab(), // otwiera w nowej karcie, aby pobranie pliku się powiodło
+                    ->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                    Tables\Actions\DeleteBulkAction::make()
+                Tables\Actions\DeleteBulkAction::make()
                     ->label('Usuń elementy'),
             ]);
-            
-            
     }
 
     public static function getRelations(): array

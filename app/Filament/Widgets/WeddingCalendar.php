@@ -1,5 +1,5 @@
 <?php
-// -------------  KALENDARZ KOMPONENT SAMEGO KALENDARZA --------------------
+
 namespace App\Filament\Widgets;
 
 use App\Models\Wedding;
@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class WeddingCalendar extends FullCalendarWidget
 {
@@ -19,63 +20,98 @@ class WeddingCalendar extends FullCalendarWidget
     // Właściwość dla aktualnie edytowanego rekordu
     public Model|string|int|null $record = null;
 
+public function fetchEvents(array $fetchInfo): array
+{
+    $start = $fetchInfo['start'] ?? null;
+    $end   = $fetchInfo['end'] ?? null;
 
-    public function fetchEvents(array $fetchInfo): array
-    {
-        $start = $fetchInfo['start'] ?? null;
-        $end   = $fetchInfo['end'] ?? null;
+    if ($start && $end) {
+        return Wedding::query()
+            ->where('data', '>=', $start)
+            ->where('data', '<=', $end)
+            ->get()
+            ->map(function (Wedding $wedding) {
+                $icons = '';
+                if (Str::contains($wedding->pakiet, 'foto')) {
+                    $icons .= '📷';
+                }
+                if (Str::contains($wedding->pakiet, 'film')) {
+                    $icons .= '🎥';
+                }
+                if (Str::contains($wedding->pakiet, 'fotoplener')) {
+                    $icons .= '🌴';
+                }
 
-        if ($start && $end) {
-            return Wedding::query()
-                ->where('data', '>=', $start)
-                ->where('data', '<=', $end)
-                ->get()
-                ->map(fn (Wedding $wedding) => [
+                return [
                     'id'    => (string) $wedding->id,
-                    'title' => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->sala}",
+                    'title' => "{$icons}{$wedding->imie1} & {$wedding->imie2}",
                     'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
                     'allDay' => true,
-                    'color' => empty($wedding->sala) || empty($wedding->typ_wesela) || empty($wedding->koscol) || empty($wedding->liczba_gosci)
-                        ? '#4881f6'
-                        : '#27bd41',
-                ])
-                ->toArray();
-        }
-
-        return [];
+                    'color' => $wedding->typ_zamowienia === 'umowa' ? '#27bd41' : '#4881f6',
+                ];
+            })
+            ->toArray();
     }
+
+    return [];
+}
+
 
     public function getActions(): array
     {
-        // Pozostawiamy tylko CreateAction – edycja będzie odbywać się przez modal uruchamiany po kliknięciu wydarzenia
         return [
             CreateAction::make()->modalHeading('Dodaj Wesele')
                 ->form([
-                    \Filament\Forms\Components\DatePicker::make('date')
+                    Forms\Components\DatePicker::make('data')
                         ->label('Data wesela')
                         ->required()
                         ->default(now()->toDateString()),
+                    // Dodajemy nowe pola do szybkiego dodania
+                    Forms\Components\TextInput::make('imie1')->label('Imię Panny Młodej')->required(),
+                    Forms\Components\TextInput::make('imie2')->label('Imię Pana Młodego')->required(),
+                    Forms\Components\TextInput::make('telefon_panny')->label('Telefon Panny Młodej')->required(),
+                    Forms\Components\TextInput::make('telefon_pana')->label('Telefon Pana Młodego')->required(),
+                    Forms\Components\Select::make('pakiet')
+                        ->label('Pakiet')
+                        ->options([
+                            'film' => 'Film',
+                            'foto' => 'Foto',
+                            'fot+film' => 'Fot+Film',
+                            'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
+                            'foto+fotoplener' => 'Foto+Fotoplener',
+                        ])
+                        ->required(),
+                    Forms\Components\Textarea::make('uwagi')
+                        ->label('Uwagi')
+                        ->rows(3)
+                        ->placeholder('Dodaj dodatkowe informacje')
+                        ->maxLength(500),
                 ])
                 ->mutateFormDataUsing(fn (array $data): array => [
-                    'date' => $data['date'],
+                    'data' => $data['data'],
+                    'imie1' => $data['imie1'] ?? '',
+                    'imie2' => $data['imie2'] ?? '',
+                    'telefon_panny' => $data['telefon_panny'] ?? '',
+                    'telefon_pana' => $data['telefon_pana'] ?? '',
+                    'pakiet' => $data['pakiet'] ?? '',
+                    'uwagi' => $data['uwagi'] ?? '',
+                    'typ_zamowienia' => $data['typ_zamowienia'] ?? 'rezerwacja',
                 ])
-                ->action(fn (array $data) => Wedding::create([
-                    'date' => $data['date'],
-                ])),
+                ->action(fn (array $data) => Wedding::create($data)),
         ];
     }
 
     protected function createEvent(array $data): Model
     {
         return Wedding::create([
-            'date' => $data['start'],
+            'data' => $data['start'],
         ]);
     }
 
     protected function editEvent(Model $record, array $data): Model
     {
         $record->update([
-            'date' => $data['start'],
+            'data' => $data['start'],
         ]);
         return $record;
     }
@@ -83,7 +119,7 @@ class WeddingCalendar extends FullCalendarWidget
     protected function updateEvent(Model $record, array $data): Model
     {
         $record->update([
-            'date' => $data['start'],
+            'data' => $data['start'],
         ]);
         return $record;
     }
@@ -91,31 +127,31 @@ class WeddingCalendar extends FullCalendarWidget
     public function eventDidMount(): string
     {
         return <<<JS
-            function({ event, timeText, isStart, isEnd, isMirror, isPast, isFuture, isToday, el, view }) {
-                // Dodajemy tooltip, jak to było wcześniej
-                el.setAttribute("x-tooltip", "tooltip");
-                el.setAttribute("x-data", "{ tooltip: '"+event.title+"' }");
-    
-                // Przypisujemy ID do elementu
-                el.setAttribute("data-event-id", event.id);
-    
-                // Logowanie ID, aby sprawdzić, czy jest poprawnie przypisane
-                console.log("Event ID:", event.id);
-                
-                // Kliknięcie na event
-                el.addEventListener('click', function(e) {
-                    e.preventDefault();  // Zatrzymujemy domyślną akcję
-                    e.stopPropagation(); // Zatrzymujemy propagację, żeby nic nie robiło się poza tym
-                    console.log("Kliknięto event z ID:", event.id);
-                    
-                    // Zmiana lokalizacji na stronę edycji, jeśli ID jest dostępne
-                    if (event.id) {
-                        window.location.href = "/admin/weddings/" + event.id + "/edit";
-                    }
-                });
+        function({ event, el }) {
+            // Szukamy elementu, który zawiera tytuł (np. fc-event-title)
+            let titleEl = el.querySelector('.fc-event-title');
+            if (titleEl) {
+                // Ustawiamy innerHTML, aby zawartość tytułu interpretowała HTML
+                titleEl.innerHTML = event.title;
             }
-        JS;
+            
+            // Pozostałe ustawienia, np. tooltip i obsługa kliknięcia
+            el.setAttribute("x-tooltip", "tooltip");
+            el.setAttribute("x-data", "{ tooltip: '"+event.title.replace(/"/g, '&quot;')+"' }");
+            el.setAttribute("data-event-id", event.id);
+            console.log("Event ID:", event.id);
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Kliknięto event z ID:", event.id);
+                if (event.id) {
+                    window.location.href = "/admin/weddings/" + event.id + "/edit";
+                }
+            });
+        }
+    JS;
     }
+    
     
     public function config(): array
     {
@@ -126,7 +162,6 @@ class WeddingCalendar extends FullCalendarWidget
             'eventDrop' => 'refreshCalendar',
             'eventResize' => 'refreshCalendar',
             'firstDay' => 1,
-
             'headerToolbar' => [
                 'left' => 'dayGridWeek,dayGridDay',
                 'center' => 'title',
@@ -135,10 +170,8 @@ class WeddingCalendar extends FullCalendarWidget
         ];
     }
     
-    // Rejestrujemy listener Livewire
     protected $listeners = ['editWedding'];
 
-    // Metoda wywoływana po kliknięciu w wydarzenie
     public function editWedding($id)
     {
         $wedding = Wedding::find($id);
@@ -146,13 +179,10 @@ class WeddingCalendar extends FullCalendarWidget
             return;
         }
         $this->record = $wedding;
-        // Wypełniamy formularz danymi rekordu
         $this->form->fill($wedding->toArray());
-        // Wysyłamy zdarzenie do przeglądarki, które otworzy modal (obsłuż to w JS/Alpine)
         $this->dispatchBrowserEvent('openEditModal');
     }
     
-    // Definiujemy schemat formularza edycji – możesz go dowolnie modyfikować
     public function getFormSchema(): array
     {
         return [
@@ -170,15 +200,31 @@ class WeddingCalendar extends FullCalendarWidget
             Forms\Components\TextInput::make('sala')->label('Sala Weselna')->default(''),
             Forms\Components\TextInput::make('koscol')->label('Kościół')->default(''),
             Forms\Components\TextInput::make('liczba_gosci')->label('Liczba Gości')->numeric()->default(0),
+            // Nowe pola w formularzu edycji
+            Forms\Components\TextInput::make('telefon_panny')->label('Telefon Panny Młodej')->required(),
+            Forms\Components\TextInput::make('telefon_pana')->label('Telefon Pana Młodego')->required(),
+            Forms\Components\Select::make('pakiet')
+                ->label('Pakiet')
+                ->options([
+                    'film' => 'Film',
+                    'foto' => 'Foto',
+                    'fot+film' => 'Fot+Film',
+                    'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
+                    'foto+fotoplener' => 'Foto+Fotoplener',
+                ])
+                ->required(),
+            Forms\Components\Textarea::make('uwagi')
+                ->label('Uwagi')
+                ->rows(3)
+                ->placeholder('Dodaj dodatkowe informacje')
+                ->maxLength(500),
         ];
     }
     
-    // Metoda zapisu zmian z formularza edycji
     public function saveEdit()
     {
         if ($this->record) {
             $this->record->update($this->form->getState());
-            // Po zapisaniu wysyłamy zdarzenie do zamknięcia modalu – obsłuż to po stronie JS
             $this->dispatchBrowserEvent('closeEditModal');
         }
     }
