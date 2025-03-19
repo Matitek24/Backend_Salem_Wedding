@@ -18,6 +18,8 @@ class WeddingStory extends Model
         'gallery_link',
         'access_code',
         'is_public',
+        'promo_link',
+        'order',
     ];
     
 

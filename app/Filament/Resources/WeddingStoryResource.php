@@ -7,6 +7,9 @@ use App\Models\WeddingStory;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+
 
 class WeddingStoryResource extends Resource
 {
@@ -27,8 +30,21 @@ class WeddingStoryResource extends Resource
                 ->directory('uploads/wedding_thumbnails')
                 ->required(),
             Forms\Components\TextInput::make('youtube_link')->url(),
+            Forms\Components\TextInput::make('promo_link')
+                ->label('Promo Link YouTube')
+                ->url(),
+
             Forms\Components\TextInput::make('gallery_link')->url(),
-            Forms\Components\TextInput::make('access_code')->required(),
+            Forms\Components\TextInput::make('access_code')
+            ->label('Kod dostępu')
+            ->default(fn () => Str::random(8))
+            ->required()
+            ->suffixAction(
+                Forms\Components\Actions\Action::make('generate')
+                    ->label('Generuj')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(fn ($set) => $set('access_code', Str::random(8)))
+            ),
             Forms\Components\Radio::make('is_public')
                 ->label('Czy historia jest publiczna?')
                 ->options([
@@ -36,7 +52,23 @@ class WeddingStoryResource extends Resource
                     0 => 'Nie'
                 ])
                 ->default(0)
-                ->inline(),
+                ->inline()
+                ->afterStateUpdated(function ($state, callable $set, $get, $record) {
+                    if ($state && !$record) {
+        
+                        $highestOrder = WeddingStory::where('is_public', true)
+                            ->max('order');
+                        
+                        // Ustaw nową wartość jako najwyższą + 1
+                        $set('order', ($highestOrder + 1));
+                    }
+                }),
+            Forms\Components\TextInput::make('order')
+                ->label('Kolejność wyświetlania')
+                ->numeric()
+                ->default(0)
+                ->helperText('Niższa wartość = wyższa pozycja')
+                ->visible(fn (callable $get) => $get('is_public') == 1),
         ]);
     }
 

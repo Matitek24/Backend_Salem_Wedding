@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Jobs\OptimizeWeddingImageJob; // Zaimportuj nowy Job
 
 class Wedding extends Model
 {
@@ -22,6 +23,7 @@ class Wedding extends Model
         'pakiet',
         'typ_zamowienia',
         'uwagi',
+        'photo',
     ];
 
     protected $attributes = [
@@ -33,6 +35,17 @@ class Wedding extends Model
         'telefon_pana' => '',
         'pakiet' => '',
         'uwagi' => '',
-        'typ_zamowienia' => 'rezerwacja', // domyślnie ustawione na rezerwacja
+        'typ_zamowienia' => 'rezerwacja',
     ];
+
+    // Dodajemy wywołanie Job po zapisaniu rekordu
+    protected static function booted()
+    {
+        static::saved(function ($record) {
+            if ($record->photo) {
+                // Wywołanie Job'a po zapisaniu
+                dispatch(new OptimizeWeddingImageJob($record));
+            }
+        });
+    }
 }
