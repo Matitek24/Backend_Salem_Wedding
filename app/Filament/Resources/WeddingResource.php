@@ -35,7 +35,7 @@ class WeddingResource extends Resource
             ->options([
                 'film' => 'Film',
                 'foto' => 'Foto',
-                'fot+film' => 'Fot+Film',
+                'foto+film' => 'Foto+Film',
                 'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
                 'foto+fotoplener' => 'Foto+Fotoplener',
             ])

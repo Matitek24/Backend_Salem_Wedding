@@ -10,15 +10,22 @@ class TermNotAvailableMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $weddingDate;
+    public $date;
+    public $unavailablePackages;
+    public $availableRequestedPackages;
+    public $alternativePackages;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($weddingDate)
+    public function __construct($date, $unavailablePackages, $availableRequestedPackages, $alternativePackages)
     {
-        $this->weddingDate = $weddingDate;
+        $this->date = $date;
+        $this->unavailablePackages = $unavailablePackages;
+        $this->availableRequestedPackages = $availableRequestedPackages;
+        $this->alternativePackages = $alternativePackages;
     }
+
 
     /**
      * Build the message.

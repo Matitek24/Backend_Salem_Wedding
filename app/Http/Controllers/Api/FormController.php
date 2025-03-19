@@ -11,22 +11,18 @@ class FormController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'firstName'         => 'required|string|max:255',
-            'lastName'          => 'required|string|max:255',
-            'email'             => 'required|email|max:255',
-            'weddingDate'       => 'required|date',
-            'weddingLocation'   => 'required|string|max:255',
-            'marriageLocation'  => 'required|string|max:255',
+            'firstName'   => 'required|string|max:255',
+            'email'       => 'required|email|max:255',
+            'weddingDate' => 'required|date',
+            'services'    => 'required|string'
         ]);
 
-        // Mapowanie z camelCase na snake_case przy zapisie do bazy
+        // Mapujemy dane do struktury zgodnej z migracją: kolumna 'pakiet' przechowuje zakres usług
         $submission = FormSubmission::create([
-            'first_name'        => $validated['firstName'],
-            'last_name'         => $validated['lastName'],
-            'email'             => $validated['email'],
-            'wedding_date'      => $validated['weddingDate'],
-            'wedding_location'  => $validated['weddingLocation'],
-            'marriage_location' => $validated['marriageLocation'],
+            'first_name'   => $validated['firstName'],
+            'email'        => $validated['email'],
+            'wedding_date' => $validated['weddingDate'],
+            'pakiet'       => $validated['services'],
         ]);
 
         return response()->json([

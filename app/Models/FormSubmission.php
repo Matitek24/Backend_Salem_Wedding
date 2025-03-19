@@ -14,7 +14,6 @@ class FormSubmission extends Model
         'last_name',
         'email',
         'wedding_date',
-        'wedding_location',
-        'marriage_location',
+        'pakiet',
     ];
 }

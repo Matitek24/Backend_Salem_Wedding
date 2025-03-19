@@ -15,9 +15,10 @@ class TermAvailableMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($weddingDate)
+    public function __construct($date, $requestedPackages)
     {
-        $this->weddingDate = $weddingDate;
+        $this->date = $date;
+        $this->requestedPackages = $requestedPackages;
     }
 
     /**
