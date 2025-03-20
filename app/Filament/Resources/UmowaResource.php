@@ -31,36 +31,36 @@ class UmowaResource extends Resource
     
         return $form
             ->schema([
-                // Ukryte pole wedding_id – przy edycji nie chcemy zmiany, tylko podgląd
-                // $wedding
-                //     ? Forms\Components\Hidden::make('wedding_id')
-                //           ->default($weddingId)
-                //     : Forms\Components\Select::make('wedding_id')
-                //           ->label('Para Młoda')
-                //           ->options(function () {
-                //               return Wedding::where('typ_zamowienia', 'rezerwacja')
-                //                   ->get()
-                //                   ->mapWithKeys(function ($wedding) {
-                //                       return [
-                //                           $wedding->id => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->data}"
-                //                       ];
-                //                   });
-                //           })
-                //           ->required()
-                //           ->searchable()
-                //           ->reactive()
-                //           ->afterStateUpdated(function (callable $set, $state) {
-                //               if ($state) {
-                //                   $wedding = Wedding::find($state);
-                //                   if ($wedding) {
-                //                       // Automatyczne wypełnienie danych
-                //                       $set('telefon_mlodego', $wedding->telefon_pana);
-                //                       $set('telefon_mlodej', $wedding->telefon_panny);
-                //                       $set('sala', $wedding->sala);
-                //                       $set('kosciol', $wedding->koscol);
-                //                   }
-                //               }
-                //           }),
+    
+                $wedding
+                    ? Forms\Components\Hidden::make('wedding_id')
+                          ->default($weddingId)
+                    : Forms\Components\Select::make('wedding_id')
+                          ->label('Para Młoda')
+                          ->options(function () {
+                              return Wedding::where('typ_zamowienia', 'rezerwacja')
+                                  ->get()
+                                  ->mapWithKeys(function ($wedding) {
+                                      return [
+                                          $wedding->id => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->data}"
+                                      ];
+                                  });
+                          })
+                          ->required()
+                          ->searchable()
+                          ->reactive()
+                          ->afterStateUpdated(function (callable $set, $state) {
+                              if ($state) {
+                                  $wedding = Wedding::find($state);
+                                  if ($wedding) {
+                                      // Automatyczne wypełnienie danych
+                                      $set('telefon_mlodego', $wedding->telefon_pana);
+                                      $set('telefon_mlodej', $wedding->telefon_panny);
+                                      $set('sala', $wedding->sala);
+                                      $set('kosciol', $wedding->koscol);
+                                  }
+                              }
+                          }),
     
                 Forms\Components\Card::make()
                     ->schema([
@@ -70,7 +70,7 @@ class UmowaResource extends Resource
                                     ->label('Sala weselna')
                                     ->dehydrated(true)
                                     ->default($wedding ? $wedding->sala : null),
-                                Forms\Components\TextInput::make('kosciol')
+                                Forms\Components\TextInput::make('koscol')
                                     ->label('Kościół')
                                     ->dehydrated(true)
                                     ->default($wedding ? $wedding->koscol : null),

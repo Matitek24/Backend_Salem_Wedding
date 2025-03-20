@@ -25,6 +25,8 @@ class Umowa extends Model
         'plik_umowy',
         'data_podpisania',
         'status',
+        'sala',
+        'koscol',
     ];
 
     // Relacja z modelem Wedding
