@@ -12,6 +12,11 @@ use App\Mail\AdminNotificationMail;
 
 class WeddingController extends Controller
 {
+    public function show($id)
+    {
+        $wedding = Wedding::findOrFail($id);
+        return response()->json($wedding);
+    }
     public function checkAvailability(Request $request)
     {
         // Walidacja danych wejściowych
