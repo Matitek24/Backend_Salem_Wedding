@@ -5,16 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UmowaResource\Pages;
 use App\Filament\Resources\UmowaResource\RelationManagers;
 use App\Models\Umowa;
+use App\Models\Wedding;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Models\Wedding;
-
-
+use GrahamCampbell\ResultType\Success;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UmowaLinkMail; // Twój Mailable, który tworzy maila z linkiem
 
 class UmowaResource extends Resource
 {
@@ -23,15 +22,16 @@ class UmowaResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
     protected static ?string $navigationLabel = 'Umowy';
     protected static ?string $navigationGroup = 'Admin';
+
     public static function form(Form $form): Form
     {
         // Jeśli wedding_id jest przekazane, pobierz dane wesela
         $weddingId = request()->query('wedding_id');
         $wedding = $weddingId ? Wedding::find($weddingId) : null;
-    
+
         return $form
             ->schema([
-    
+                // Jeśli mamy wedding_id, ukrywamy wybór wesela, w przeciwnym wypadku wyświetlamy select
                 $wedding
                     ? Forms\Components\Hidden::make('wedding_id')
                           ->default($weddingId)
@@ -57,11 +57,10 @@ class UmowaResource extends Resource
                                       $set('telefon_mlodego', $wedding->telefon_pana);
                                       $set('telefon_mlodej', $wedding->telefon_panny);
                                       $set('sala', $wedding->sala);
-                                      $set('kosciol', $wedding->koscol);
+                                      $set('koscol', $wedding->koscol);
                                   }
                               }
                           }),
-    
                 Forms\Components\Card::make()
                     ->schema([
                         Forms\Components\Grid::make(2)
@@ -86,19 +85,23 @@ class UmowaResource extends Resource
                         Forms\Components\TextInput::make('nr_dowodu')
                             ->label('Nr dowodu'),
                         Forms\Components\Textarea::make('adres')
-                            ->rows(3),
+                            ->rows(3)
+                            ->required(),
                         Forms\Components\TextInput::make('nip')
                             ->label('NIP'),
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('telefon_mlodego')
                                     ->label('Telefon Pana Młodego')
-                                    ->default($wedding ? $wedding->telefon_pana : null),
+                                    ->default($wedding ? $wedding->telefon_pana : null)
+                                    ->required(),
                                 Forms\Components\TextInput::make('telefon_mlodej')
                                     ->label('Telefon Pani Młodej')
-                                    ->default($wedding ? $wedding->telefon_panny : null),
+                                    ->default($wedding ? $wedding->telefon_panny : null)
+                                    ->required(),
                             ]),
                     ]),
+                    
                 Forms\Components\Card::make()
                     ->schema([
                         Forms\Components\FileUpload::make('plik_umowy')
@@ -116,17 +119,67 @@ class UmowaResource extends Resource
                             ->default('utworzona')
                             ->required(),
                     ]),
-                    Forms\Components\Actions::make([
-                        Forms\Components\Actions\Action::make('Pobierz PDF')
-                            ->label('Generuj Umowę PDF')
-                            ->url(fn ($record) => route('umowa.pdf', $record->id))
-                            ->openUrlInNewTab()
-                            ->icon('heroicon-o-folder-arrow-down'),
-                    ]),                    
-            ]);
+                      // Akcja generowania PDF
+                Forms\Components\Actions::make([
+                    Forms\Components\Actions\Action::make('Pobierz PDF')
+                        ->label('Generuj Umowę PDF')
+                        ->url(fn ($record) => route('umowa.pdf', $record->id))
+                        ->openUrlInNewTab()
+                        ->icon('heroicon-o-folder-arrow-down'),
+                ]),
+                // Pole na adres email odbiorcy – nie jest zapisywane w bazie
+                Forms\Components\TextInput::make('recipient_email')
+                ->label('Email odbiorcy')
+                ->columnSpanFull()
+                ->email(),
+            // Akcja wysyłki formularza umowy na podany email
+            Forms\Components\Actions::make([
+                Forms\Components\Actions\Action::make('sendEmail')
+                    ->label('Wyślij formularz umowy')
+                    ->color('success')
+                    ->action(function (array $data, $livewire): void {
+                        // Pobieramy email bezpośrednio z aktualnego stanu formularza
+                        $recipient = $livewire->data['recipient_email'] ?? null;
+                        
+                        if (!$recipient) {
+                            throw new \Exception("Brakuje adresu e-mail odbiorcy.");
+                        }
+                        
+                        // Pobieramy wedding_id z aktualnego formularza
+                        // Dla edycji istniejącego rekordu
+                        if ($livewire->record) {
+                            $weddingId = $livewire->record->wedding_id;
+                        }
+                        // Dla tworzenia nowego rekordu - pobierz z danych formularza
+                        else {
+                            $weddingId = $livewire->data['wedding_id'] ?? null;
+                        }
+                        
+                        if (!$weddingId) {
+                            throw new \Exception("Nie można znaleźć ID wesela. Upewnij się, że formularz został prawidłowo wypełniony.");
+                        }
+                        
+                        // Generujemy link do umowy
+                        $link = url("/umowa/{$weddingId}");
+                        
+                        // Wysyłamy maila
+                        Mail::to($recipient)->send(new UmowaLinkMail($link));
+                        
+                        // Dodajemy powiadomienie o sukcesie
+                        \Filament\Notifications\Notification::make()
+                            ->title('Email został wysłany pomyślnie')
+                            ->success()
+                            ->send();
+                    })
+                    ->requiresConfirmation()
+                    ->icon('heroicon-o-envelope'),
+            ]),
+                
             
+            ]);
     }
-        public static function table(Table $table): Table
+
+    public static function table(Table $table): Table
     {
         return $table
             ->columns([
@@ -162,19 +215,14 @@ class UmowaResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('Pobierz pdf')
                     ->url(fn (Umowa $record) => route('umowa.pdf', $record->id))
                     ->openUrlInNewTab()
                     ->icon('heroicon-o-folder-arrow-down'),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
-            
     }
 
     public static function getRelations(): array
