@@ -116,7 +116,15 @@ class UmowaResource extends Resource
                             ->default('utworzona')
                             ->required(),
                     ]),
+                    Forms\Components\Actions::make([
+                        Forms\Components\Actions\Action::make('Pobierz PDF')
+                            ->label('Generuj Umowę PDF')
+                            ->url(fn ($record) => route('umowa.pdf', $record->id))
+                            ->openUrlInNewTab()
+                            ->icon('heroicon-o-folder-arrow-down'),
+                    ]),                    
             ]);
+            
     }
         public static function table(Table $table): Table
     {
@@ -157,7 +165,16 @@ class UmowaResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\Action::make('Pobierz pdf')
+                    ->url(fn (Umowa $record) => route('umowa.pdf', $record->id))
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-folder-arrow-down'),
             ]);
+            
     }
 
     public static function getRelations(): array
