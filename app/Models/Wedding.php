@@ -38,6 +38,10 @@ class Wedding extends Model
         'typ_zamowienia' => 'rezerwacja',
     ];
 
+    public function umowy()
+        {
+            return $this->hasMany(Umowa::class);
+        }
     // Dodajemy wywołanie Job po zapisaniu rekordu
     protected static function booted()
     {
