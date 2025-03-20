@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use GrahamCampbell\ResultType\Success;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\UmowaLinkMail; // Twój Mailable, który tworzy maila z linkiem
+use Illuminate\Support\Facades\URL;
 
 class UmowaResource extends Resource
 {
@@ -160,7 +161,8 @@ class UmowaResource extends Resource
                         }
                         
                         // Generujemy link do umowy
-                        $link = url("/umowa/{$weddingId}");
+                        $link = URL::signedRoute('umowa.show', ['wedding_id' => $weddingId]);
+                        $link = str_replace('localhost:8000', 'localhost:3000', $link); // CHWILOWO ZMIENIA NA PORT 3000 RECZNIE !!!!!!!! DO ZMIANY 
                         
                         // Wysyłamy maila
                         Mail::to($recipient)->send(new UmowaLinkMail($link));

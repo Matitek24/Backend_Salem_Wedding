@@ -5,6 +5,7 @@ use App\Http\Controllers\FormSubmissionExportController;
 use App\Exports\WeddingsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\UmowaController;
+use App\Http\Controllers\Api\WeddingController;
 
 
 Route::get('/admin/form-submissions-export', [FormSubmissionExportController::class, 'export'])
@@ -20,3 +21,9 @@ Route::get('/', function () {
 
 
 Route::get('/umowa/{id}/pdf', [UmowaController::class, 'generatePdf'])->name('umowa.pdf');
+
+// TYLKO DO TWORZENIA LINK SIGNED !!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Route::get('/umowa/{wedding_id}', function () {
+    return view('app');
+})->name('umowa.show')->middleware('signed');

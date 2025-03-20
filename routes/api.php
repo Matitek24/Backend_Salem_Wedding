@@ -44,3 +44,6 @@ Route::delete('/banners/{id}', [BannerController::class, 'destroy']); // Usuwa b
 
 Route::get('/weddings/{id}', [WeddingController::class, 'show']);
 Route::post('/umowy', [UmowaController::class, 'store']);
+
+Route::get('/weddings/{wedding_id}', [WeddingController::class, 'show'])
+    ->middleware('signed');
