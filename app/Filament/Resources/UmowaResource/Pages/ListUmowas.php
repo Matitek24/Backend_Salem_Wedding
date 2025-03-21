@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\URL;
 class ListUmowas extends ListRecords
 {
     protected static string $resource = UmowaResource::class;
-
-  // app/Filament/Resources/UmowaResource/Pages/ListUmowy.php
 protected function getActions(): array
 {
     return [

@@ -7,14 +7,17 @@ use App\Filament\Resources\UmowaResource\RelationManagers;
 use App\Models\Umowa;
 use App\Models\Wedding;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Actions\Action; // Add this line
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use GrahamCampbell\ResultType\Success;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\UmowaLinkMail; // Twój Mailable, który tworzy maila z linkiem
+use App\Mail\UmowaLinkMail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Storage;
 
 class UmowaResource extends Resource
 {
@@ -103,14 +106,44 @@ class UmowaResource extends Resource
                             ]),
                     ]),
                     
-                Forms\Components\Card::make()
+                    Forms\Components\Card::make()
                     ->schema([
-                        Forms\Components\FileUpload::make('plik_umowy')
+                        FileUpload::make('plik_umowy')
                             ->label('Plik umowy')
                             ->disk('public')
-                            ->directory('umowy'),
+                            ->directory('umowy')
+                            ->visibility('public')
+                            ->previewable()
+                            ->downloadable()
+                            ->deletable(),
+                        
+                        // Sekcja podglądu umowy i przycisk usuwania
+                        Forms\Components\Actions::make([
+                            Action::make('delete_contract')
+                                ->label('Usuń plik umowy z dysku')
+                                ->color('danger')
+                                ->icon('heroicon-o-trash')
+                                ->requiresConfirmation()
+                                ->modalHeading('Potwierdzenie usunięcia')
+                                ->modalSubheading('Czy na pewno chcesz usunąć plik umowy? Ta operacja jest nieodwracalna.')
+                                ->modalButton('Tak, usuń plik')
+                                ->hidden(fn ($record) => !$record || !$record->plik_umowy)
+                                ->action(function ($record) {
+                                    if ($record->plik_umowy) {
+                                        // Usuwa plik z dysku
+                                        Storage::delete('public/' . $record->plik_umowy);
+                                        // Usuwa ścieżkę z bazy danych
+                                        $record->plik_umowy = null;
+                                        // Zapisuje zmiany
+                                        $record->save();
+                                        // Powiadomienie o sukcesie
+                                    }
+                                })
+                            ]),
+                            
                         Forms\Components\DatePicker::make('data_podpisania')
                             ->label('Data podpisania'),
+                            
                         Forms\Components\Select::make('status')
                             ->options([
                                 'utworzona' => 'Utworzona',
@@ -119,8 +152,8 @@ class UmowaResource extends Resource
                             ])
                             ->default('utworzona')
                             ->required(),
-                    ]),
-                      // Akcja generowania PDF
+                            ]),
+
                 Forms\Components\Actions::make([
                     Forms\Components\Actions\Action::make('Pobierz PDF')
                         ->label('Generuj Umowę PDF')
@@ -224,7 +257,8 @@ class UmowaResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+            ->defaultSort('status', 'asc'); 
     }
 
     public static function getRelations(): array
