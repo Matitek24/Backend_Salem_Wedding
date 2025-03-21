@@ -43,6 +43,9 @@ class WeddingStoryController extends Controller
             'youtube_link'   => 'nullable|url',
             'gallery_link'   => 'nullable|url',
             'access_code'    => 'required|string|max:255',
+            'promo_link'     => 'nullable|url',
+            'additional_text' => 'nullable|string',
+            'extra_gallery_link' => 'nullable|url',
         ]);
 
         if ($request->hasFile('thumbnail')) {
@@ -72,6 +75,9 @@ class WeddingStoryController extends Controller
             'youtube_link'   => 'nullable|url',
             'gallery_link'   => 'nullable|url',
             'access_code'    => 'sometimes|string|max:255',
+            'promo_link'     => 'nullable|url',
+            'additional_text' => 'nullable|string',
+            'extra_gallery_link' => 'nullable|url',
         ]);
 
         if ($request->hasFile('thumbnail')) {

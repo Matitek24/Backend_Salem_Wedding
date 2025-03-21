@@ -26,6 +26,7 @@ class UmowaController extends Controller
                 'data_podpisania' => 'nullable|date',
                 'status'          => 'nullable|in:utworzona,podpisana,anulowana',
                 'adres'           => 'required|string',
+                'nr_dowodu'       => 'required|string|max:9',
                 'nip'             => 'nullable|string|max:10',
                 'telefon_mlodego' => 'required|string',
                 'telefon_mlodej'  => 'required|string',

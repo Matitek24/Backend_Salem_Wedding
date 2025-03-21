@@ -10,7 +10,6 @@ use Filament\Tables;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
-
 class WeddingStoryResource extends Resource
 {
     protected static ?string $model = WeddingStory::class;
@@ -33,18 +32,17 @@ class WeddingStoryResource extends Resource
             Forms\Components\TextInput::make('promo_link')
                 ->label('Promo Link YouTube')
                 ->url(),
-
             Forms\Components\TextInput::make('gallery_link')->url(),
             Forms\Components\TextInput::make('access_code')
-            ->label('Kod dostępu')
-            ->default(fn () => Str::random(8))
-            ->required()
-            ->suffixAction(
-                Forms\Components\Actions\Action::make('generate')
-                    ->label('Generuj')
-                    ->icon('heroicon-o-arrow-path')
-                    ->action(fn ($set) => $set('access_code', Str::random(8)))
-            ),
+                ->label('Kod dostępu')
+                ->default(fn () => Str::random(8))
+                ->required()
+                ->suffixAction(
+                    Forms\Components\Actions\Action::make('generate')
+                        ->label('Generuj')
+                        ->icon('heroicon-o-arrow-path')
+                        ->action(fn ($set) => $set('access_code', Str::random(8)))
+                ),
             Forms\Components\Radio::make('is_public')
                 ->label('Czy historia jest publiczna?')
                 ->options([
@@ -55,10 +53,7 @@ class WeddingStoryResource extends Resource
                 ->inline()
                 ->afterStateUpdated(function ($state, callable $set, $get, $record) {
                     if ($state && !$record) {
-        
-                        $highestOrder = WeddingStory::where('is_public', true)
-                            ->max('order');
-                        
+                        $highestOrder = WeddingStory::where('is_public', true)->max('order');
                         // Ustaw nową wartość jako najwyższą + 1
                         $set('order', ($highestOrder + 1));
                     }
@@ -68,6 +63,14 @@ class WeddingStoryResource extends Resource
                 ->numeric()
                 ->default(0)
                 ->helperText('Niższa wartość = wyższa pozycja')
+                ->visible(fn (callable $get) => $get('is_public') == 1),
+            // Dodane pola wyświetlane tylko gdy historia jest publiczna
+            Forms\Components\Textarea::make('additional_text')
+                ->label('Dodatkowy opis')
+                ->visible(fn (callable $get) => $get('is_public') == 1),
+            Forms\Components\TextInput::make('extra_gallery_link')
+                ->label('Dodatkowy link do galerii')
+                ->url()
                 ->visible(fn (callable $get) => $get('is_public') == 1),
         ]);
     }
@@ -79,7 +82,7 @@ class WeddingStoryResource extends Resource
             Tables\Columns\TextColumn::make('description')->limit(50),
             Tables\Columns\BooleanColumn::make('is_public')->label('Publiczna'),
         ])->filters([
-
+            //
         ])->actions([
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),

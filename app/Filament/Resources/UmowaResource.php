@@ -118,8 +118,7 @@ class UmowaResource extends Resource
                             ->previewable()
                             ->downloadable()
                             ->deletable(),
-                        
-                        // Sekcja podglądu umowy i przycisk usuwania
+                            
                         Forms\Components\Actions::make([
                             Action::make('delete_contract')
                                 ->label('Usuń plik umowy z dysku')
@@ -134,7 +133,6 @@ class UmowaResource extends Resource
                                     if ($record->plik_umowy) {
                                         // Usuwa plik z dysku
                                         Storage::delete('public/' . $record->plik_umowy);
-                                        // Usuwa ścieżkę z bazy danych
                                         $record->plik_umowy = null;
                                         // Zapisuje zmiany
                                         $record->save();
@@ -146,23 +144,25 @@ class UmowaResource extends Resource
                         Forms\Components\DatePicker::make('data_podpisania')
                             ->label('Data podpisania'),
                             
-                        Forms\Components\Select::make('status')
-                            ->options([
-                                'utworzona' => 'Utworzona',
-                                'podpisana' => 'Podpisana',
-                                'anulowana' => 'Anulowana',
-                            ])
-                            ->default('utworzona')
-                            ->required(),
+                            Forms\Components\Checkbox::make('status')
+                            ->label('Podpisana')
+                            ->default(false)
+                            ->afterStateHydrated(function ($state, $component) {
+                                $component->state($state == 'podpisana');
+                            })
+                            ->dehydrateStateUsing(function ($state) {
+                                return $state ? 'podpisana' : 'utworzona';
+                            }),
                             ]),
 
-                Forms\Components\Actions::make([
-                    Forms\Components\Actions\Action::make('Pobierz PDF')
-                        ->label('Generuj Umowę PDF')
-                        ->url(fn ($record) => route('umowa.pdf', $record->id))
-                        ->openUrlInNewTab()
-                        ->icon('heroicon-o-folder-arrow-down'),
-                ]),
+                        Forms\Components\Actions::make([
+                                Forms\Components\Actions\Action::make('Pobierz PDF')
+                                    ->label('Generuj Umowę PDF')
+                                    ->url(fn ($record) => $record ? route('umowa.pdf', $record->id) : null)
+                                    ->hidden(fn ($record) => $record === null) // Hide when no record exists
+                                    ->openUrlInNewTab()
+                                    ->icon('heroicon-o-folder-arrow-down'),
+                            ]),
                 // Pole na adres email odbiorcy – nie jest zapisywane w bazie
                 Forms\Components\TextInput::make('recipient_email')
                 ->label('Email odbiorcy')
@@ -246,7 +246,6 @@ class UmowaResource extends Resource
                     ->options([
                         'utworzona' => 'Utworzona',
                         'podpisana' => 'Podpisana',
-                        'anulowana' => 'Anulowana',
                     ]),
             ])
             ->actions([
