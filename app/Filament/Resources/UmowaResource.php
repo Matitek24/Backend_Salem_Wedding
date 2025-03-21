@@ -26,6 +26,8 @@ class UmowaResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-paper-clip';
     protected static ?string $navigationLabel = 'Umowy';
     protected static ?string $navigationGroup = 'Admin';
+    protected static ?string $modelLabel = 'Panel Umów';
+    protected static ?string $pluralModelLabel = 'Panel Umów';
 
     public static function form(Form $form): Form
     {

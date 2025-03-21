@@ -81,12 +81,8 @@
     </div>
     <div class="content">
       <div class="calendar-icon">📅</div>
-      <div class="success">
-        <p>Termin <span class="highlight">{{ \Carbon\Carbon::parse($date)->format('d.m.Y') }}</span> jest dostępny!</p>
-      </div>
-      
       <p>Witaj!</p>
-      <p>Z przyjemnością informujemy, że wybrany przez Ciebie termin <span class="highlight">{{ \Carbon\Carbon::parse($date)->format('d.m.Y') }}</span> jest dostępny dla wszystkich wybranych przez Ciebie usług.</p>
+      <p>Z przyjemnością informujemy, że wybrany przez Ciebie termin jest dostępny dla wszystkich wybranych przez Ciebie usług.</p>
       
       <p>Aby zarezerwować ten termin, prosimy o szybki kontakt telefoniczny:</p>
       
