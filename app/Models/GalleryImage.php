@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use WebPConvert\WebPConvert;
 
 class GalleryImage extends Model
 {
@@ -16,7 +15,7 @@ class GalleryImage extends Model
     public function category()
     {
         return $this->belongsTo(Category::class, 'category_id');
-    }
+    } // Dodana relacja 
     
     protected static function boot()
     {
@@ -25,19 +24,12 @@ class GalleryImage extends Model
         static::creating(function ($image) {
             $maxOrder = static::where('category_id', $image->category_id)->max('order');
             $image->order = $maxOrder + 1;
-        });
-
-        // static::saved(function ($image) {
-        //     if ($image->image_path) {
-        //         // Dispatch joba do optymalizacji obrazu
-        //         dispatch(new \App\Jobs\OptimizeImageJob($image));
-        //     }
-        // });
+        }); // funkcja do nadawania ordera przy tworzeniu rekordu
 
         static::deleting(function ($image) {
             if ($image->image_path) {
                 Storage::delete("public/{$image->image_path}");
             }
-        });
+        }); // funkcja do usuwania zdjecia z storage przy usuwaniu rekordu
     }
 }

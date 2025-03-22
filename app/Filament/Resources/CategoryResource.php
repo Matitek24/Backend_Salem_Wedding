@@ -19,8 +19,7 @@ class CategoryResource extends Resource
     protected static ?string $modelLabel = 'Kategoria';
     protected static ?string $navigationIcon = 'heroicon-o-photo';
     protected static ?string $navigationGroup = 'CMS Zarządzanie';
-
-
+// formularz do kategorii
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -30,14 +29,12 @@ class CategoryResource extends Resource
                 ->label('Nazwa kategorii'),
         ]);
     }
-
+// tabela do kategorii 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->sortable()
-                    ->searchable()
                     ->label('Kategoria'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime('d-m-Y H:i:s')
@@ -51,7 +48,7 @@ class CategoryResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
-
+// relacje do galerii
     public static function getRelations(): array
     {
         return [

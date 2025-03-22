@@ -19,9 +19,10 @@ class WeddingsExport implements FromCollection, WithHeadings
     public function collection()
     {
         return Wedding::all([
-            'imie1', 'imie2', 'data', 'typ_wesela', 'sala', 'koscol', 'liczba_gosci'
+            'imie1', 'imie2', 'data', 'typ_wesela', 'sala', 'koscol', 'liczba_gosci', 'telefon_panny', 'telefon_pana','pakiet'
         ]);
     }
+    // dane do eksportu pdf z bazy wesel z kalendarza
 
     /**
      * Nagłówki kolumn w pliku Excel
@@ -38,6 +39,9 @@ class WeddingsExport implements FromCollection, WithHeadings
             'Sala Weselna',
             'Kościół',
             'Liczba Gości',
+            'Telefon Panny Młodej',
+            'Telefon Pana Młodego',
+            'Pakiet',
         ];
     }
 }

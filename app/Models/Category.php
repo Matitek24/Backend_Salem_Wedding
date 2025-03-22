@@ -14,5 +14,5 @@ class Category extends Model
     public function galleryImages()
     {
         return $this->hasMany(GalleryImage::class)->orderBy('order');
-    }
+    } // relacja z modelami GalleryImage
 }

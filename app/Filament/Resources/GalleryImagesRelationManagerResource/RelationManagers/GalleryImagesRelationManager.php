@@ -3,16 +3,13 @@
 namespace App\Filament\Resources\GalleryImagesRelationManagerResource\RelationManagers;
 
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\Layout\Grid;
-use Filament\Notifications\Notification;
-
 class GalleryImagesRelationManager extends RelationManager
 {
-    protected static string $relationship = 'galleryImages';
+    protected static string $relationship = 'galleryImages';  //relacja z modelem w Models GalleryImage 
     protected static ?string $recordTitleAttribute = 'image_path';
     protected static ?string $label = 'Galeria';
     protected static ?string $pluralLabel = 'Galerie';
@@ -21,10 +18,10 @@ class GalleryImagesRelationManager extends RelationManager
     {
         return $table
             ->contentGrid([
-                'sm' => 2, // 2 kolumny na małych ekranach
-                'md' => 3, // 3 kolumny na średnich ekranach
-                'lg' => 4, // 4 kolumny na dużych ekranach
-                'xl' => 4, // 5 kolumn na większych ekranach
+                'sm' => 2, 
+                'md' => 3,
+                'lg' => 4,
+                'xl' => 4,
             ])
             ->columns([
                 Grid::make(1)
@@ -38,7 +35,7 @@ class GalleryImagesRelationManager extends RelationManager
                             ")
                             ->html(),
                     ]),
-            ])
+            ]) // zdjecie w tabelii 
             ->defaultSort('order')
             ->reorderable('order')
             ->actions([
@@ -47,9 +44,8 @@ class GalleryImagesRelationManager extends RelationManager
                 ->icon('heroicon-s-pencil')
                     ->label('webp')
                     ->visible(function ($record) {
-                        // Sprawdza, czy nazwa pliku nie kończy się na .webp (ignorując wielkość liter)
                         return !preg_match('/\.webp$/i', $record->image_path);
-                    })
+                    }) // sprwadza czy konczy sie na webp walidacji do widocznosci 
                     ->action(function ($record) {
                         dispatch(new \App\Jobs\OptimizeImageJob($record));
                         \Filament\Notifications\Notification::make()
@@ -57,7 +53,8 @@ class GalleryImagesRelationManager extends RelationManager
                             ->success()
                             ->send();
                     }),
-            ])
+            ]) 
+            // optymalizacja do webp guzik
             
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -78,5 +75,6 @@ class GalleryImagesRelationManager extends RelationManager
                         }
                     }),
             ]);
+            // dodawanie zdjecia do bazy danych action tworzy nam nowy adres do zdjecia zapisujac go w bazie danych
     }
 }

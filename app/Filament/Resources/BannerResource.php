@@ -19,7 +19,7 @@ class BannerResource extends Resource
     protected static ?string $slug = 'banery';
     protected static ?string $navigationGroup = 'CMS Zarządzanie';
 
-
+// Formularz od banerów
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form->schema([
@@ -27,7 +27,6 @@ class BannerResource extends Resource
                 ->image()
                 ->maxSize(8192)
                 ->directory('banners')
-                ->required()
                 ->label('Zdjęcie')
                 ->required(),
 
@@ -42,11 +41,11 @@ class BannerResource extends Resource
                     'historie' => 'Wasze Historie',
                     'blog' => 'Blog',
                     'portfolio' => 'Portfolio',
-                ])
+                ]) // podstrony obecne na stronie dodajemy ręcznie
                 ->required(),
         ]);
     }
-
+// Tabela z banerami
     public static function table(Tables\Table $table): Tables\Table
     {
        return $table->columns([
@@ -60,25 +59,24 @@ class BannerResource extends Resource
             ->html(),
         TextColumn::make('page')->label('Podstrona'),
     ])
-    ->actions([
-        Tables\Actions\EditAction::make(),
-        Tables\Actions\DeleteAction::make(),
-        Tables\Actions\Action::make('optimize')
-            ->icon('heroicon-s-pencil')
-            ->label('webp')
-            ->visible(function ($record) {
-                // Ukryj przycisk, jeśli plik ma rozszerzenie .webp
-                return !preg_match('/\.webp$/i', $record->image);
-            })
-            ->action(function ($record) {
-                dispatch(new \App\Jobs\OptimizeBannerJob($record));
-                \Filament\Notifications\Notification::make()
-                    ->title('Optymalizacja została uruchomiona.')
-                    ->success()
-                    ->send();
-            }),
-    ])
-    
+// Konwertuje do webp baner 
+        ->actions([
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+            Tables\Actions\Action::make('optimize')
+                ->icon('heroicon-s-pencil')
+                ->label('webp')
+                ->visible(function ($record) {
+                    return !preg_match('/\.webp$/i', $record->image);
+                })
+                ->action(function ($record) {
+                    dispatch(new \App\Jobs\OptimizeBannerJob($record));
+                    \Filament\Notifications\Notification::make()
+                        ->title('Optymalizacja została uruchomiona.')
+                        ->success()
+                        ->send();
+                }),
+        ])    
     ->bulkActions([
         Tables\Actions\DeleteBulkAction::make(),
     ]);
