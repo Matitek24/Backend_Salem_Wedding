@@ -76,6 +76,7 @@ class FormSubmissionResource extends Resource
     public static function table(FilamentTable $table): FilamentTable
     {
         return $table
+        
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('ID')

@@ -9,7 +9,7 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\Layout\Grid;
 class GalleryImagesRelationManager extends RelationManager
 {
-    protected static string $relationship = 'galleryImages';  //relacja z modelem w Models GalleryImage 
+    protected static string $relationship = 'galleryImages'; 
     protected static ?string $recordTitleAttribute = 'image_path';
     protected static ?string $label = 'Galeria';
     protected static ?string $pluralLabel = 'Galerie';

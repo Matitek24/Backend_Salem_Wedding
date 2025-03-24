@@ -51,6 +51,7 @@ class WeddingStoryResource extends Resource
                 ])
                 ->default(0)
                 ->inline()
+                ->live()
                 ->afterStateUpdated(function ($state, callable $set, $get, $record) {
                     if ($state && !$record) {
                         $highestOrder = WeddingStory::where('is_public', true)->max('order');
@@ -72,7 +73,22 @@ class WeddingStoryResource extends Resource
                 ->label('Dodatkowy link do galerii')
                 ->url()
                 ->visible(fn (callable $get) => $get('is_public') == 1),
-        ]);
+                Forms\Components\Section::make('Visualizacja')
+                ->visible(fn (callable $get) => $get('thumbnail'))
+                ->schema([
+                    Forms\Components\Placeholder::make('photo_preview')
+                        ->content(fn ($record) => new HtmlString(
+                            $record && $record->thumbnail && $record->couple_name && $record->description ? 
+                            '<div style="text-align: center; padding-bottom: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; background-color: #fff;">
+                                <img src="' . asset('storage/' . e($record->thumbnail)) . '" alt="Zdjęcie pary" style="max-width: 100%; height: auto; border-radius: 10px 10px 0 0; display: block;" />
+                                <h2 style="margin-top: 15px; margin-bottom: 10px; font-weight: 600; color:black; font-size:20px;">' . e($record->couple_name ?? 'Brak nazwy') . '</h2>
+                                <hr style="border: 0; height: 1px; background-color: #e0e0e0; margin: 15px 0;" />
+                                <p style="margin-bottom: 0; color: #555;">' . e($record->description ?? 'Brak opisu') . '</p>
+                            </div>' : ''
+                        ))
+                        ->columnSpan(2),
+                ]),
+                    ]);
     }
 
     public static function table(Tables\Table $table): Tables\Table

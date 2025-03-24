@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\Layout\Grid;
 
 class CategoryResource extends Resource
 {
@@ -33,12 +34,18 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->contentGrid([
+                'sm' => 2, 
+                'md' => 3,
+                'lg' => 3,
+                'xl' => 3,
+            ])
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+              Grid::make(1)
+                ->schema([
+                    Tables\Columns\TextColumn::make('name')
                     ->label('Kategoria'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime('d-m-Y H:i:s')
-                    ->label('Utworzono'),
+                ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
