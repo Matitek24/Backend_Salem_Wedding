@@ -76,7 +76,7 @@ class WeddingStoryResource extends Resource
                 Forms\Components\Section::make('Visualizacja')
                 ->visible(fn (callable $get) => $get('thumbnail'))
                 ->schema([
-                    Forms\Components\Placeholder::make('Preview')
+                    Forms\Components\Placeholder::make('Previeww')
                         ->content(fn ($record) => new HtmlString(
                             $record && $record->thumbnail && $record->couple_name && $record->description ? 
                             '<div style="text-align: center; padding-bottom: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 400px; margin: 0 auto; background-color: #fff;">
