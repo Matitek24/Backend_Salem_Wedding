@@ -25,8 +25,18 @@ class WeddingResource extends Resource
     {
         return $form
         ->schema([
-            Forms\Components\TextInput::make('imie1')->label('Imię Panny Młodej')->required(),
-            Forms\Components\TextInput::make('imie2')->label('Imię Pana Młodego')->required(),
+            Forms\Components\TextInput::make('imie1')
+                ->label('Imię Panny Młodej')
+                ->required(),
+            Forms\Components\TextInput::make('nazwisko1')
+                ->label('Nazwisko Panny Młodej')
+                ->required(),
+            Forms\Components\TextInput::make('imie2')
+                ->label('Imię Pana Młodego')
+                ->required(),
+            Forms\Components\TextInput::make('nazwisko2')
+                ->label('Nazwisko Pana Młodego')
+                ->required(),
             Forms\Components\TextInput::make('telefon_panny')->label('Telefon Panny Młodej')->required(),
             Forms\Components\TextInput::make('telefon_pana')->label('Telefon Pana Młodego')->required(),
             Forms\Components\DatePicker::make('data')->label('Data Wesela')->required(),
@@ -39,14 +49,6 @@ class WeddingResource extends Resource
                 'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
                 'foto+fotoplener' => 'Foto+Fotoplener',
             ])
-            ->required(),
-        Forms\Components\Select::make('typ_zamowienia')
-            ->label('Typ Zamówienia')
-            ->options([
-                'rezerwacja' => 'Rezerwacja',
-                'umowa' => 'Wesele Umowa',
-            ])
-            ->default('umowa')
             ->required(),
             Forms\Components\TextInput::make('sala')->label('Sala Weselna')->default(''),
             Forms\Components\TextInput::make('koscol')->label('Kościół')->default(''),
@@ -69,6 +71,14 @@ class WeddingResource extends Resource
                 ->image() 
                 ->directory('admin-photos') 
                 ->nullable(),
+                Forms\Components\Select::make('typ_zamowienia')
+                ->label('Typ Zamówienia')
+                ->options([
+                    'rezerwacja' => 'Rezerwacja',
+                    'umowa' => 'Wesele Umowa',
+                ])
+                ->default('rezerwacja')
+                ->required(),
 
                 
                 Forms\Components\Section::make('Podgląd zdjęcia')

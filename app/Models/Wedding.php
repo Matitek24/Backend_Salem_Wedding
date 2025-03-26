@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Jobs\OptimizeWeddingImageJob; // Zaimportuj nowy Job
+use App\Jobs\OptimizeWeddingImageJob;
 
 class Wedding extends Model
 {
@@ -12,7 +12,9 @@ class Wedding extends Model
 
     protected $fillable = [
         'imie1',
+        'nazwisko1', 
         'imie2',
+        'nazwisko2',
         'data',
         'typ_wesela',
         'sala',
@@ -39,15 +41,14 @@ class Wedding extends Model
     ];
 
     public function umowy()
-        {
-            return $this->hasMany(Umowa::class);
-        }
-    // Dodajemy wywołanie Job po zapisaniu rekordu
+    {
+        return $this->hasMany(Umowa::class);
+    }
+
     protected static function booted()
     {
         static::saved(function ($record) {
             if ($record->photo) {
-                // Wywołanie Job'a po zapisaniu
                 dispatch(new OptimizeWeddingImageJob($record));
             }
         });

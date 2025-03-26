@@ -22,10 +22,16 @@ class ListWeddings extends ListRecords
                 ->color("info")
                 ->form([
                     \Filament\Forms\Components\TextInput::make('imie1')
-                        ->label('Imię Panny Młodej')
+                    ->label('Imię Panny Młodej')
+                    ->required(),
+                    \Filament\Forms\Components\TextInput::make('nazwisko1')
+                        ->label('Nazwisko Panny Młodej')
                         ->required(),
                     \Filament\Forms\Components\TextInput::make('imie2')
                         ->label('Imię Pana Młodego'),
+                    \Filament\Forms\Components\TextInput::make('nazwisko2')
+                        ->label('Nazwisko Pana Młodego')
+                        ->required(),
                     \Filament\Forms\Components\TextInput::make('telefon_panny')
                         ->label('Telefon Panny Młodej')
                         ->required(),
@@ -52,8 +58,10 @@ class ListWeddings extends ListRecords
                 ])
                 ->action(function (array $data) {
                     Wedding::create([
-                        'imie1'            => $data['imie1'],
-                        'imie2'            => $data['imie2'],
+                        'imie1'         => $data['imie1'],
+                        'nazwisko1'     => $data['nazwisko1'],
+                        'imie2'         => $data['imie2'],
+                        'nazwisko2'     => $data['nazwisko2'],
                         'data'             => $data['data'],
                         'telefon_panny'    => $data['telefon_panny'],
                         'telefon_pana'     => $data['telefon_pana'],
@@ -65,7 +73,7 @@ class ListWeddings extends ListRecords
                 ->successNotificationTitle('Wesele dodane!'),
             Actions\CreateAction::make()
                 ->icon('heroicon-o-plus-circle')
-                ->label('Dodaj Wesele (Informacje)') 
+                ->label('Dodaj Wesele') 
                 ->color('success'),
         ];
     }

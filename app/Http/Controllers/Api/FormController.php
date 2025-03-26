@@ -14,7 +14,8 @@ class FormController extends Controller
             'firstName'   => 'required|string|max:255',
             'email'       => 'required|email|max:255',
             'weddingDate' => 'required|date',
-            'services'    => 'required|string'
+            'services'    => 'required|string',
+            'miejscowosc'  => 'required|string|max:255',
         ]);
 
         // Mapujemy dane do struktury zgodnej z migracją: kolumna 'pakiet' przechowuje zakres usług
@@ -23,6 +24,7 @@ class FormController extends Controller
             'email'        => $validated['email'],
             'wedding_date' => $validated['weddingDate'],
             'pakiet'       => $validated['services'],
+            'miejscowosc'  => $validated['miejscowosc'],
         ]);
 
         return response()->json([

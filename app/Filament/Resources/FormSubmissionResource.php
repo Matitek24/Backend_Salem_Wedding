@@ -37,11 +37,14 @@ class FormSubmissionResource extends Resource
                                     ->required()
                                     ->maxLength(100),
                                 
-                            
-                                
                                 Forms\Components\TextInput::make('email')
                                     ->label('Adres e-mail')
                                     ->email()
+                                    ->required()
+                                    ->maxLength(255),
+                                    
+                                Forms\Components\TextInput::make('miejscowosc')
+                                    ->label('Miejscowosc')
                                     ->required()
                                     ->maxLength(255),
                             ]),
@@ -87,7 +90,11 @@ class FormSubmissionResource extends Resource
                     ->label('Imię')
                     ->searchable()
                     ->sortable(),
-                
+                Tables\Columns\TextColumn::make('miejscowosc')
+                    ->label("Miejscowosc")
+                    ->searchable()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
