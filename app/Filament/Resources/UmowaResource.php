@@ -43,6 +43,7 @@ class UmowaResource extends Resource
                           ->default($weddingId)
                     : Forms\Components\Select::make('wedding_id')
                           ->label('Para Młoda')
+                          ->disabled()
                           ->options(function () {
                               return Wedding::where('typ_zamowienia', 'rezerwacja')
                                   ->get()
@@ -94,7 +95,8 @@ class UmowaResource extends Resource
                             ->rows(3)
                             ->required(),
                         Forms\Components\TextInput::make('nip')
-                            ->label('NIP'),
+                            ->label('NIP')
+                            ->maxLength(10),
                         Forms\Components\Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('telefon_mlodego')

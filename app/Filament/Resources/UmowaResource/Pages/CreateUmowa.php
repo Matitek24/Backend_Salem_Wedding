@@ -79,7 +79,6 @@ class CreateUmowa extends CreateRecord
             if (method_exists($field, 'getName')) {
                 $name = $field->getName();
                 
-                // Mapuj pola z wedding na odpowiednie pola w formularzu
                 switch ($name) {
                     case 'telefon_mlodego':
                         if (method_exists($field, 'default')) {

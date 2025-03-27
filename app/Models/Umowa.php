@@ -1,6 +1,5 @@
 <?php
 
-// app/Models/Umowa.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +11,7 @@ class Umowa extends Model
     use HasFactory;
 
     protected $table = 'umowy';
-    
+
     protected $fillable = [
         'wedding_id',
         'imie',
@@ -30,15 +29,31 @@ class Umowa extends Model
         'koscol',
     ];
 
-    // Relacja z modelem Wedding
+    protected $attributes = [
+        'wedding_id' => null,
+        'imie' => '',
+        'nazwisko' => '',
+        'pesel' => '',
+        'nr_dowodu' => '',
+        'adres' => '',
+        'nip' => '',
+        'telefon_mlodego' => '',
+        'telefon_mlodej' => '',
+        'plik_umowy' => null,
+        'data_podpisania' => null,
+        'status' => 'utworzona', // Domyślny status
+        'sala' => '',
+        'koscol' => '',
+    ];
+
     public function wedding()
     {
         return $this->belongsTo(Wedding::class);
     }
+
     protected static function booted()
     {
         static::updating(function ($record) {
-            // Jeśli pole 'plik_umowy' zostało zmienione – czyli usunięte (np. z wartości na null)
             if ($record->isDirty('plik_umowy')) {
                 $originalFile = $record->getOriginal('plik_umowy');
                 if ($originalFile && Storage::disk('public')->exists($originalFile)) {

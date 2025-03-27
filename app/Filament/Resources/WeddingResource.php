@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\Actions\Action;
+use App\Models\Umowa;
 
 
 class WeddingResource extends Resource
@@ -79,6 +80,7 @@ class WeddingResource extends Resource
                 ])
                 ->default('rezerwacja')
                 ->required(),
+                
 
                 
                 Forms\Components\Section::make('Podgląd zdjęcia')
@@ -98,14 +100,38 @@ class WeddingResource extends Resource
                                 ->requiresConfirmation()
                                 ->action(function ($record) {
                                     if ($record->photo) {
-                                        Storage::delete('public/' . $record->photo); // Usuwa plik z storage
-                                        $record->photo = null; // Usuwa ścieżkę z bazy
-                                        $record->save(); // Zapisuje zmiany
+                                        Storage::delete('public/' . $record->photo); 
+                                        $record->photo = null; 
+                                        $record->save(); 
                                     }
                                 })
                                 ->hidden(fn ($record) => !$record || !$record->photo),
                         ]),
-                    ]),                
+                        
+                    ]),   
+                    Forms\Components\Actions::make([
+                        Action::make('manage_contract')
+                            ->visible(fn ($record) => $record !== null)
+                            ->label(fn ($record) => Umowa::where('wedding_id', $record->id)->exists() ? 'Edytuj umowę' : 'Utwórz umowę')
+                            ->icon(fn ($record) => Umowa::where('wedding_id', $record->id)->exists() ? 'heroicon-o-pencil' : 'heroicon-o-document-text')
+                            ->color(fn ($record) => Umowa::where('wedding_id', $record->id)->exists() ? 'info' : 'primary')
+                            ->requiresConfirmation()
+                            ->action(function ($record) {
+                                $umowa = Umowa::firstOrCreate(
+                                    ['wedding_id' => $record->id],
+                                    [
+                                        'telefon_mlodego' => $record->telefon_pana,
+                                        'telefon_mlodej' => $record->telefon_panny,
+                                        'sala' => $record->sala,
+                                        'koscol' => $record->koscol,
+                                        'status' => 'utworzona',
+                                    ]
+                                );
+                                return redirect()->route('filament.admin.resources.umowas.edit', ['record' => $umowa->id]);
+                            }),
+                    ])
+                    
+                                 
         ]);
     }
 
@@ -122,15 +148,11 @@ class WeddingResource extends Resource
                 Tables\Columns\TextColumn::make('data')
                     ->label('Data Wesela')
                     ->sortable(),
-                // Tables\Columns\TextColumn::make('liczba_gosci')
-                //     ->label('Liczba Gości')
-                //     ->sortable()
-                //     ->color(fn ($state) => $state == 0 ? 'danger' : 'default'),
-                // Nowe kolumny (opcjonalnie)
                 Tables\Columns\TextColumn::make('typ_zamowienia')
                     ->label('Typ Zamówienia')
                     ->color(fn ($state) => $state == "rezerwacja" ? 'danger' : 'default'),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([])
             ->actions([
                 Tables\Actions\Action::make('export')
