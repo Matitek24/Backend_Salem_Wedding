@@ -39,74 +39,104 @@ class UmowaResource extends Resource
             ->schema([
                 // Jeśli mamy wedding_id, ukrywamy wybór wesela, w przeciwnym wypadku wyświetlamy select
                 $wedding
-                    ? Forms\Components\Hidden::make('wedding_id')
-                          ->default($weddingId)
-                    : Forms\Components\Select::make('wedding_id')
-                          ->label('Para Młoda')
-                          ->disabled()
-                          ->options(function () {
-                              return Wedding::where('typ_zamowienia', 'rezerwacja')
-                                  ->get()
-                                  ->mapWithKeys(function ($wedding) {
-                                      return [
-                                          $wedding->id => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->data}"
-                                      ];
-                                  });
-                          })
-                          ->required()
-                          ->searchable()
-                          ->reactive()
-                          ->afterStateUpdated(function (callable $set, $state) {
-                              if ($state) {
-                                  $wedding = Wedding::find($state);
-                                  if ($wedding) {
-                                      // Automatyczne wypełnienie danych
-                                      $set('telefon_mlodego', $wedding->telefon_pana);
-                                      $set('telefon_mlodej', $wedding->telefon_panny);
-                                      $set('sala', $wedding->sala);
-                                      $set('koscol', $wedding->koscol);
-                                  }
-                              }
-                          }),
+                ? Forms\Components\Hidden::make('wedding_id')
+                    ->default($weddingId)
+                    ->dehydrated() // zapewnia, że wartość jest wysyłana wraz z formularzem
+                : Forms\Components\Select::make('wedding_id')
+                    ->label('Para Młoda')
+                    ->options(function () {
+                        return Wedding::where('typ_zamowienia', 'rezerwacja')
+                            ->get()
+                            ->mapWithKeys(function ($wedding) {
+                                return [
+                                    $wedding->id => "{$wedding->imie1} & {$wedding->imie2} - {$wedding->data}"
+                                ];
+                            });
+                    })
+                    ->required()
+                    ->searchable()
+                    ->reactive()
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        if ($state) {
+                            $wedding = Wedding::find($state);
+                            if ($wedding) {
+                                // Automatyczne wypełnienie powiązanych danych
+                                $set('telefon_mlodego', $wedding->telefon_pana);
+                                $set('telefon_mlodej', $wedding->telefon_panny);
+                                $set('sala', $wedding->sala);
+                                $set('koscol', $wedding->koscol);
+                            }
+                        }
+                    }),
+            
                 Forms\Components\Card::make()
                     ->schema([
                         Forms\Components\Grid::make(2)
                             ->schema([
-                                Forms\Components\TextInput::make('sala')
-                                    ->label('Sala weselna')
-                                    ->dehydrated(true)
-                                    ->default($wedding ? $wedding->sala : null),
-                                Forms\Components\TextInput::make('koscol')
-                                    ->label('Kościół')
-                                    ->dehydrated(true)
-                                    ->default($wedding ? $wedding->koscol : null),
-                            ]),
-                        Forms\Components\TextInput::make('imie')
-                            ->label('Imię')
-                            ->required(),
-                        Forms\Components\TextInput::make('nazwisko')
-                            ->required(),
-                        Forms\Components\TextInput::make('pesel')
-                            ->label('PESEL')
-                            ->maxLength(11),
-                        Forms\Components\TextInput::make('nr_dowodu')
-                            ->label('Nr dowodu'),
-                        Forms\Components\Textarea::make('adres')
-                            ->rows(3)
-                            ->required(),
-                        Forms\Components\TextInput::make('nip')
-                            ->label('NIP')
-                            ->maxLength(10),
-                        Forms\Components\Grid::make(2)
-                            ->schema([
+                            
+
+                                Forms\Components\TextInput::make('imie')
+                                    ->label('Imię')
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('nazwisko')
+                                    ->label('Nazwisko')
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('pesel')
+                                    ->label('PESEL')
+                                    ->maxLength(11)
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('nr_dowodu')
+                                    ->label('Nr dowodu')
+                                    ->required(),
+
+                                Forms\Components\Textarea::make('adres')
+                                    ->label('Adres')
+                                    ->required(),
+
                                 Forms\Components\TextInput::make('telefon_mlodego')
                                     ->label('Telefon Pana Młodego')
-                                    ->default($wedding ? $wedding->telefon_pana : null)
                                     ->required(),
-                                Forms\Components\TextInput::make('telefon_mlodej')
-                                    ->label('Telefon Pani Młodej')
-                                    ->default($wedding ? $wedding->telefon_panny : null)
+
+                                Forms\Components\TextInput::make('sala')
+                                    ->label('Sala weselna')
                                     ->required(),
+
+                                Forms\Components\TextInput::make('koscol')
+                                    ->label('Kościół')
+                                    ->required(),
+
+                                Forms\Components\DatePicker::make('data')
+                                    ->label('Data ślubu')
+                                    ->required(),
+
+                                Forms\Components\DatePicker::make('data_final')
+                                    ->label('Data finalizacji'),
+
+                                Forms\Components\TextInput::make('stawka')
+                                    ->label('Stawka (PLN)')
+                                    ->numeric()
+                                    ->required(),
+
+                                Forms\Components\TextInput::make('zadatek')
+                                    ->label('Zadatek (PLN)')
+                                    ->numeric(),
+                                Forms\Components\Select::make('pakiet')
+                                    ->label('Pakiet')
+                                    ->required()
+                                    ->options([
+                                        'foto' => 'Fotografia',
+                                        'film' => 'Film',
+                                        'foto_film' => 'Fotografia + Film',
+                                        'foto_film_plener' => 'Fotografia + Film + Plener',
+                                        'foto_plener' => 'Fotografia + Plener',
+                                    ])
+                                    ->searchable(),
+                                Forms\Components\Toggle::make('dron')
+                                    ->label('Dron')
+                                    ->default(false),
                             ]),
                     ]),
                     

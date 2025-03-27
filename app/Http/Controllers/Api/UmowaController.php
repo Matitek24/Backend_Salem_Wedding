@@ -22,17 +22,18 @@ class UmowaController extends Controller
                 'koscol'          => 'required|string',
                 'imie'            => 'required|string',
                 'nazwisko'        => 'required|string',
-                'pesel'           => 'nullable|string|max:11',
-                'data_podpisania' => 'nullable|date',
-                'status'          => 'nullable|in:utworzona,podpisana,anulowana',
+                'pesel'           => 'nullable|string|size:11',
+                'nr_dowodu'       => 'required|string|max:22',
+                'pakiet'          => 'required|string',
                 'adres'           => 'required|string',
-                'nr_dowodu'       => 'required|string|max:9',
-                'nip'             => 'nullable|string|max:10',
                 'telefon_mlodego' => 'required|string',
-                'telefon_mlodej'  => 'required|string',
+                'data'            => 'required|date',
+                'dron'            => 'required|boolean',
+                'status'          => 'nullable|in:utworzona,podpisana,anulowana',
+    
             ]);
 
-            // Jeśli status nie został podany, ustawiamy domyślną wartość
+            // Ustawiamy domyślny status, jeśli nie został podany
             if (!isset($validatedData['status'])) {
                 $validatedData['status'] = 'utworzona';
             }

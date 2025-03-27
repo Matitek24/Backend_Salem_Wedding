@@ -85,11 +85,6 @@ class CreateUmowa extends CreateRecord
                             $field->default($wedding->telefon_pana);
                         }
                         break;
-                    case 'telefon_mlodej':
-                        if (method_exists($field, 'default')) {
-                            $field->default($wedding->telefon_panny);
-                        }
-                        break;
                     case 'sala':
                             if (method_exists($field, 'default')) {
                                 $field->default($wedding->sala);

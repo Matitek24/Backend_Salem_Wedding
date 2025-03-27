@@ -25,7 +25,7 @@ class EditUmowa extends EditRecord
                 $wedding->update(['typ_zamowienia' => 'umowa']);
             }
         }
-        if ($this->record->status === 'anulowana' || $this->record->status === 'utworzona') {
+        if ($this->record->status === 'utworzona') {
             $wedding = Wedding::find($this->record->wedding_id);
             if ($wedding) {
                 $wedding->update(['typ_zamowienia' => 'rezerwacja']);
