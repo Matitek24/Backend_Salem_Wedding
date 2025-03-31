@@ -19,12 +19,24 @@ class WeddingResource extends Resource
     protected static ?string $model = Wedding::class;
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
     protected static ?string $navigationLabel = 'Wesela';
+
+    protected static ?string $modelLabel = 'Wesela';
+    protected static ?string $pluralModelLabel = 'Wesela';
     protected static ?string $navigationGroup = 'Admin';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Forms\Components\Placeholder::make('wedding_header')
+                ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                    '<div style="text-align:center; font-size: 2.2em; font-weight: bold; color:#FAFAFF;">' .
+                    $record->imie1 . ' & ' . $record->imie2 . ' ' . \Carbon\Carbon::parse($record->data)->format("d-m-Y") .
+                    '</div>'
+                ))
+                ->disableLabel()
+                ->columnSpanFull(),
+            
                 // Sekcja podstawowa – dane wesela
                 Forms\Components\Section::make('Strefa Ważna')
                     ->description('Kluczowe informacje o parze i terminie')
@@ -40,7 +52,7 @@ class WeddingResource extends Resource
                                 Forms\Components\TextInput::make('telefon_panny')
                                     ->label('Telefon Panny Młodej')
                                     ->required(),
-
+    
                                 Forms\Components\TextInput::make('imie2')
                                     ->label('Imię Pana Młodego')
                                     ->required(),
@@ -74,7 +86,7 @@ class WeddingResource extends Resource
                                     ])
                                     ->default('rezerwacja')
                                     ->required(),
-
+    
                                 Forms\Components\TextInput::make('sala')
                                     ->label('Sala Weselna')
                                     ->required(),
@@ -83,9 +95,32 @@ class WeddingResource extends Resource
                                     ->required(),
                             ]),
                     ]),
-                // Sekcja danych do umowy – umieszczamy je w podkluczu "umowa"
+                // Radio - wybór osoby, dla której generowana będzie umowa
+                Forms\Components\Radio::make('contract_person')
+                    ->label('Na kogo ma być umowa?')
+                    ->options([
+                        'bride' => 'Panna Młoda',
+                        'groom' => 'Pan Młody',
+                    ])
+                    ->reactive()
+                    ->required()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        if ($state === 'bride') {
+                            // Uzupełniamy dane umowy z danych panny młodej
+                            $set('umowa.imie', $get('imie1'));
+                            $set('umowa.nazwisko', $get('nazwisko1'));
+                            $set('umowa.telefon_mlodego', $get('telefon_panny'));
+                        } elseif ($state === 'groom') {
+                            // Uzupełniamy dane umowy z danych pana młodego
+                            $set('umowa.imie', $get('imie2'));
+                            $set('umowa.nazwisko', $get('nazwisko2'));
+                            $set('umowa.telefon_mlodego', $get('telefon_pana'));
+                        }
+                    }),
+                // Sekcja danych do umowy – ukryta do momentu wyboru osoby
                 Forms\Components\Section::make('Dane Umowy')
                     ->description('Uzupełnij dane do tworzenia/aktualizacji umowy')
+                    ->hidden(fn ($get) => !$get('contract_person'))
                     ->schema([
                         Forms\Components\Grid::make(3)
                             ->schema([
@@ -95,11 +130,23 @@ class WeddingResource extends Resource
                                 Forms\Components\TextInput::make('umowa.nazwisko')
                                     ->label('Nazwisko (umowa)')
                                     ->required(),
+                                Forms\Components\TextInput::make('umowa.telefon_mlodego')
+                                    ->label('Telefon (umowa)')
+                                    ->required(),
                                 Forms\Components\TextInput::make('umowa.pesel')
-                                    ->label('PESEL')
+                                    ->label('Pesel')
+                                    ->required()
+                                    ->length(11)
                                     ->nullable(),
                                 Forms\Components\TextInput::make('umowa.nr_dowodu')
                                     ->label('Nr dowodu')
+                                    ->required(),
+                                Forms\Components\TextInput::make('umowa.adres')
+                                    ->label('Adres (umowa)')
+                                    ->required(),
+                                Forms\Components\TextInput::make('umowa.stawka')
+                                    ->label('Stawka')
+                                    ->numeric()
                                     ->required(),
                                 Forms\Components\Select::make('umowa.pakiet')
                                     ->label('Pakiet (umowa)')
@@ -110,33 +157,26 @@ class WeddingResource extends Resource
                                         'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
                                         'foto+fotoplener' => 'Foto+Fotoplener',
                                     ])
-                                    ->required(),
-                                Forms\Components\TextInput::make('umowa.adres')
-                                    ->label('Adres (umowa)')
-                                    ->required(),
-                                Forms\Components\TextInput::make('umowa.telefon_mlodego')
-                                    ->label('Telefon (umowa)')
-                                    ->required(),
+                                    ->default(fn (callable $get) => $get('pakiet'))
+                                    ->disabled(),
                                 Forms\Components\DatePicker::make('umowa.data')
                                     ->label('Data (umowa)')
-                                    ->required(),
-                                Forms\Components\TextInput::make('umowa.stawka')
-                                    ->label('Stawka')
-                                    ->numeric()
-                                    ->required(),
+                                    ->default(fn (callable $get) => $get('data'))
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('umowa.sala')
+                                    ->label('Sala (umowa)')
+                                    ->default(fn (callable $get) => $get('sala'))
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('umowa.koscol')
+                                    ->label('Kościół (umowa)')
+                                    ->default(fn (callable $get) => $get('koscol'))
+                                    ->disabled(),
                                 Forms\Components\Toggle::make('umowa.dron')
                                     ->label('Dron')
                                     ->default(false),
-                                Forms\Components\TextInput::make('umowa.sala')
-                                    ->label('Sala (umowa)')
-                                    ->required(),
-                                Forms\Components\TextInput::make('umowa.koscol')
-                                    ->label('Kościół (umowa)')
-                                    ->required(),
                             ]),
                     ]),
-
-                // Inne sekcje formularza
+                // Inne sekcje formularza (Strefa Dodatkowa, Podgląd zdjęcia, itd.) pozostają bez zmian
                 Forms\Components\Section::make('Strefa Dodatkowa')
                     ->description('Dodatkowe informacje i szczegóły')
                     ->schema([
@@ -179,25 +219,47 @@ class WeddingResource extends Resource
                             ->directory('admin-photos')
                             ->nullable(),
                     ]),
-                // Podgląd zdjęcia
+                    Forms\Components\Actions::make([
+                        Forms\Components\Actions\Action::make('Pobierz PDF')
+                            ->label('Generuj Umowę PDF')
+                            ->url(function ($record) {
+                                if (!$record) {
+                                    return null;
+                                }
+                                // Pobieramy umowę na podstawie wedding_id
+                                $umowa = \App\Models\Umowa::where('wedding_id', $record->id)->first();
+                                return $umowa ? route('umowa.pdf', $umowa->id) : null;
+                            })
+                            ->hidden(function ($record) {
+                                if (!$record) {
+                                    return true;
+                                }
+                                // Ukryj przycisk, jeżeli nie ma powiązanej umowy
+                                return !\App\Models\Umowa::where('wedding_id', $record->id)->exists();
+                            })
+                            ->openUrlInNewTab()
+                            ->icon('heroicon-o-folder-arrow-down'),
+                    ]),
+                    
+                    
                 Forms\Components\Section::make('Podgląd zdjęcia')
                     ->hidden(fn ($record) => !$record || !$record->photo)
                     ->schema([
                         Forms\Components\Placeholder::make('photo_preview')
-                            ->content(fn ($record) => new HtmlString(
+                            ->content(fn ($record) => new \Illuminate\Support\HtmlString(
                                 '<img src="' . asset('storage/' . $record->photo) . '" alt="Zdjęcie pary" 
                                 style="max-width: 40%; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">'
                             ))
                             ->disableLabel(),
                         Forms\Components\Actions::make([
-                            Action::make('delete_photo')
+                            \Filament\Forms\Components\Actions\Action::make('delete_photo')
                                 ->label('Usuń zdjęcie')
                                 ->color('danger')
                                 ->icon('heroicon-o-trash')
                                 ->requiresConfirmation()
                                 ->action(function ($record) {
                                     if ($record->photo) {
-                                        Storage::delete('public/' . $record->photo);
+                                        \Illuminate\Support\Facades\Storage::delete('public/' . $record->photo);
                                         $record->photo = null;
                                         $record->save();
                                     }
@@ -207,7 +269,6 @@ class WeddingResource extends Resource
                     ]),
             ]);
     }
-
     public static function table(Table $table): Table
     {
         return $table

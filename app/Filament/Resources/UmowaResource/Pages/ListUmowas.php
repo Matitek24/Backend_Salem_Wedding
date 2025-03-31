@@ -34,14 +34,21 @@ class ListUmowas extends ListRecords
                         ->required()
                         ->searchable(),
                 ])
-                ->action(function (array $data): void {
-                    // Redirect to create page with wedding_id as query parameter
-                    $this->redirect(
-                        UmowaResource::getUrl('create', [
-                            'wedding_id' => $data['wedding_id']
-                        ])
-                    );
-                }),
+               ->action(function (array $data): void {
+                // Pobranie rekordu wesela na podstawie wedding_id
+                $wedding = Wedding::find($data['wedding_id']);
+
+                // Przekierowanie do strony tworzenia umowy wraz z dodatkowymi danymi
+                $this->redirect(
+                    UmowaResource::getUrl('create', [
+                        'wedding_id' => $wedding->id,
+                        'pakiet'    => $wedding->pakiet,
+                        'data'      => $wedding->data,
+                        'koscol'    => $wedding->koscol,
+                        'sala'      => $wedding->sala,
+                    ])
+                );
+            }),
         ];
     }
 }
