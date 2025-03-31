@@ -44,10 +44,15 @@ public function fetchEvents(array $fetchInfo): array
 
                 return [
                     'id'    => (string) $wedding->id,
-                    'title' => "{$icons}{$wedding->imie1} & {$wedding->imie2}",
+                    'title' => $wedding->imie2 != null ? "{$icons}{$wedding->imie1} & {$wedding->imie2}" : "Wydarzenie <b>{$wedding->imie1}</b> ",
                     'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
                     'allDay' => true,
-                    'color' => $wedding->typ_zamowienia === 'umowa' ? '#27bd41' : '#4881f6',
+                   'color' => match ($wedding->typ_zamowienia) {
+                    'umowa' => '#27bd41',
+                    'event' => '#F5412F',
+                    'rezerwacja_terminu' => '#ff0000', // Jaskrawy czerwony
+                    default => '#4881f6',
+                },
                 ];
             })
             ->toArray();

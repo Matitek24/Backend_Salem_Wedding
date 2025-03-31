@@ -32,6 +32,10 @@ class Wedding extends Model
     ];
 
     protected $attributes = [
+        'imie1' => '',
+        'nazwisko1' => '', 
+        'imie2' => '',
+        'nazwisko2' => '',
         'sala' => '',
         'koscol' => '',
         'liczba_gosci' => 0,

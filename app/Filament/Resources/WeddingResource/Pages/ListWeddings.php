@@ -15,6 +15,60 @@ class ListWeddings extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('quickAddEvent')
+            ->label('Zarezerwuj Event')
+            ->icon('heroicon-o-calendar')
+            ->modalHeading('Szybka rezerwacja eventu')
+            ->color("danger")
+            ->form([
+                \Filament\Forms\Components\TextInput::make('imie1')
+                    ->label('Nazwa Eventu')
+                    ->required(),
+                \Filament\Forms\Components\Select::make('pakiet')
+                    ->label('Pakiet')
+                    ->options([
+                        'film' => 'Film',
+                        'foto' => 'Foto',
+                        'foto+film' => 'Foto+Film',
+                    ])
+                    ->required()
+                    ->hidden(fn (callable $get) => $get('rezerwuj_caly_zespol')),
+                \Filament\Forms\Components\DatePicker::make('data')
+                    ->label('Data Eventu')
+                    ->required(),
+                \Filament\Forms\Components\Checkbox::make('rezerwuj_caly_zespol')
+                    ->label('Zarezerwuj cały zespół (2x Foto + 2x Film)')
+                    ->helperText('Zaznacz, aby zarezerwować cały zespół na tę datę')
+                    ->live(),
+            ])
+            ->action(function (array $data) {
+                if (!empty($data['rezerwuj_caly_zespol']) && $data['rezerwuj_caly_zespol']) {
+                    // Tworzenie rezerwacji dla 2x foto
+                    for ($i = 1; $i <= 2; $i++) {
+                        Wedding::create([
+                            'imie1' => $data['imie1'] . " CALA DATA ",
+                            'data' => $data['data'],
+                            'pakiet' => 'foto+film',
+                            'typ_zamowienia' => 'rezerwacja_terminu',
+                        ]);
+                    }
+                    
+            
+                } else {
+                    Wedding::create([
+                        'imie1' => $data['imie1'],
+                        'pakiet' => $data['pakiet'],
+                        'data' => $data['data'],
+                        'typ_zamowienia' => 'event',
+                    ]);
+                }
+            })
+            ->successNotificationTitle(fn (callable $get) => 
+                !empty($get('rezerwuj_caly_zespol')) && $get('rezerwuj_caly_zespol') 
+                    ? 'Cały zespół zarezerwowany!' 
+                    : 'Event dodany!'
+            ),
+        
             Actions\Action::make('quickAddWedding')
                 ->label('Rezerwacja Terminu')
                 ->icon('heroicon-o-plus-circle')
