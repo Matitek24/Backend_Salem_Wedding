@@ -26,6 +26,9 @@ class Wedding extends Model
         'typ_zamowienia',
         'uwagi',
         'photo',
+        'mail',
+        'social_link',
+        'pawel_jest'
     ];
 
     protected $attributes = [
