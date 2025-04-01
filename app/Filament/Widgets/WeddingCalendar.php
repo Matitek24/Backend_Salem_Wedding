@@ -44,7 +44,7 @@ public function fetchEvents(array $fetchInfo): array
 
                 return [
                     'id'    => (string) $wedding->id,
-                    'title' => $wedding->imie2 != null ? "{$icons}{$wedding->imie1} & {$wedding->imie2}" : "Wydarzenie <b>{$wedding->imie1}</b> ",
+                    'title' => $wedding->imie2 != null ? "{$icons}{$wedding->imie1} & {$wedding->imie2}" : "Event {$wedding->imie1}",
                     'start' => Carbon::parse($wedding->data)->format('Y-m-d'),
                     'allDay' => true,
                    'color' => match ($wedding->typ_zamowienia) {

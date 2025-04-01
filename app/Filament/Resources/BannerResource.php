@@ -41,7 +41,7 @@ class BannerResource extends Resource
                     'historie' => 'Wasze Historie',
                     'blog' => 'Blog',
                     'portfolio' => 'Portfolio',
-                ]) // podstrony obecne na stronie dodajemy ręcznie
+                ]) 
                 ->required(),
         ]);
     }
@@ -57,9 +57,12 @@ class BannerResource extends Resource
                 </div>
             ")
             ->html(),
-        TextColumn::make('page')->label('Podstrona'),
+        TextColumn::make('page')
+        ->label('Podstrona')
+        ->sortable(),
+        
     ])
-// Konwertuje do webp baner 
+
         ->actions([
             Tables\Actions\EditAction::make(),
             Tables\Actions\DeleteAction::make(),

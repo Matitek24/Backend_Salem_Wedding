@@ -43,15 +43,12 @@ class ListWeddings extends ListRecords
             ])
             ->action(function (array $data) {
                 if (!empty($data['rezerwuj_caly_zespol']) && $data['rezerwuj_caly_zespol']) {
-                    // Tworzenie rezerwacji dla 2x foto
-                    for ($i = 1; $i <= 2; $i++) {
                         Wedding::create([
-                            'imie1' => $data['imie1'] . " CALA DATA ",
+                            'imie1' => $data['imie1'] . "- Cala Data ",
                             'data' => $data['data'],
-                            'pakiet' => 'foto+film',
+                            'pakiet' => 'foto+film+fotoplener+foto+film+fotoplener',
                             'typ_zamowienia' => 'rezerwacja_terminu',
                         ]);
-                    }
                     
             
                 } else {

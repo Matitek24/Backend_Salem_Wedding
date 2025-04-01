@@ -36,7 +36,6 @@ class WeddingResource extends Resource
                 ))
                 ->disableLabel()
                 ->columnSpanFull(),
-            
                 // Sekcja podstawowa – dane wesela
                 Forms\Components\Section::make('Strefa Ważna')
                     ->description('Kluczowe informacje o parze i terminie')
@@ -300,8 +299,6 @@ class WeddingResource extends Resource
             ]);
     }
 
-
-    
     public static function getRelations(): array
     {
         return [];
