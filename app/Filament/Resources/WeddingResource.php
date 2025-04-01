@@ -28,17 +28,64 @@ class WeddingResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('typ_zamowienia')
+                    ->label('Typ Zamówienia')
+                    ->options([
+                        'rezerwacja' => 'Rezerwacja',
+                        'umowa' => 'Wesele Umowa',
+                        'event' => 'Event',
+                        'rezerwacja_terminu' => 'Rezerwacja Terminu',
+                    ])
+                    ->default('rezerwacja')
+                    ->required()
+                    ->reactive(),
+
+                // Nagłówek - pokazuje się tylko dla pełnych formularzy
                 Forms\Components\Placeholder::make('wedding_header')
-                ->content(fn ($record) => new \Illuminate\Support\HtmlString(
-                    '<div style="text-align:center; font-size: 2.2em; font-weight: bold; color:#FAFAFF;">' .
-                    $record->imie1 . ' & ' . $record->imie2 . ' ' . \Carbon\Carbon::parse($record->data)->format("d-m-Y") .
-                    '</div>'
-                ))
-                ->disableLabel()
-                ->columnSpanFull(),
-                // Sekcja podstawowa – dane wesela
+                    ->content(fn ($record) => new \Illuminate\Support\HtmlString(
+                        '<div style="text-align:center; font-size: 2.2em; font-weight: bold; color:#FAFAFF; margin:20px;">' .
+                        ($record ? ($record->imie1 . ' & ' . $record->imie2 . ' ' . \Carbon\Carbon::parse($record->data)->format("d-m-Y")) : '') .
+                        '</div>'
+                    ))
+                    ->disableLabel()
+                    ->columnSpanFull()
+                    ->hidden(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu'])),
+
+                // Podstawowe informacje dla wszystkich typów
+                Forms\Components\Section::make('Podstawowe informacje')
+                    ->schema([
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\DatePicker::make('data')
+                                    ->label('Data')
+                                    ->required(),
+                                
+                                Forms\Components\Select::make('pakiet')
+                                    ->label('Pakiet')
+                                    ->options([
+                                        'film' => 'Film',
+                                        'foto' => 'Foto',
+                                        'foto+film' => 'Foto+Film',
+                                        'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
+                                        'foto+fotoplener' => 'Foto+Fotoplener',
+                                    ])
+                                    ->required(),
+                                
+                                Forms\Components\TextInput::make('imie1')
+                                    ->label(fn (callable $get) => 
+                                        in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']) 
+                                            ? 'Nazwa wydarzenia' 
+                                            : 'Nazwa'
+                                    )
+                                    ->required()
+                                    ->visible(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu'])),
+                            ]),
+                    ]),
+
+                // Sekcja podstawowa – dane wesela (tylko dla standardowych typów)
                 Forms\Components\Section::make('Strefa Ważna')
                     ->description('Kluczowe informacje o parze i terminie')
+                    ->hidden(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
                     ->schema([
                         Forms\Components\Grid::make(3)
                             ->schema([
@@ -51,7 +98,6 @@ class WeddingResource extends Resource
                                 Forms\Components\TextInput::make('telefon_panny')
                                     ->label('Telefon Panny Młodej')
                                     ->required(),
-    
                                 Forms\Components\TextInput::make('imie2')
                                     ->label('Imię Pana Młodego')
                                     ->required(),
@@ -64,28 +110,6 @@ class WeddingResource extends Resource
                             ]),
                         Forms\Components\Grid::make(3)
                             ->schema([
-                                Forms\Components\DatePicker::make('data')
-                                    ->label('Data Wesela')
-                                    ->required(),
-                                Forms\Components\Select::make('pakiet')
-                                    ->label('Pakiet')
-                                    ->options([
-                                        'film' => 'Film',
-                                        'foto' => 'Foto',
-                                        'foto+film' => 'Foto+Film',
-                                        'foto+film+fotoplener' => 'Foto+Film+Fotoplener',
-                                        'foto+fotoplener' => 'Foto+Fotoplener',
-                                    ])
-                                    ->required(),
-                                Forms\Components\Select::make('typ_zamowienia')
-                                    ->label('Typ Zamówienia')
-                                    ->options([
-                                        'rezerwacja' => 'Rezerwacja',
-                                        'umowa' => 'Wesele Umowa',
-                                    ])
-                                    ->default('rezerwacja')
-                                    ->required(),
-    
                                 Forms\Components\TextInput::make('sala')
                                     ->label('Sala Weselna')
                                     ->required(),
@@ -94,7 +118,8 @@ class WeddingResource extends Resource
                                     ->required(),
                             ]),
                     ]),
-                // Radio - wybór osoby, dla której generowana będzie umowa
+
+                // Radio - wybór osoby, dla której generowana będzie umowa (tylko dla standardowych typów)
                 Forms\Components\Radio::make('contract_person')
                     ->label('Na kogo ma być umowa?')
                     ->options([
@@ -103,6 +128,7 @@ class WeddingResource extends Resource
                     ])
                     ->reactive()
                     ->required()
+                    ->hidden(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                         if ($state === 'bride') {
                             // Uzupełniamy dane umowy z danych panny młodej
@@ -116,10 +142,11 @@ class WeddingResource extends Resource
                             $set('umowa.telefon_mlodego', $get('telefon_pana'));
                         }
                     }),
-                // Sekcja danych do umowy – ukryta do momentu wyboru osoby
+
+                // Sekcja danych do umowy – ukryta do momentu wyboru osoby i dla uproszczonych typów
                 Forms\Components\Section::make('Dane Umowy')
                     ->description('Uzupełnij dane do tworzenia/aktualizacji umowy')
-                    ->hidden(fn ($get) => !$get('contract_person'))
+                    ->hidden(fn ($get) => !$get('contract_person') || in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
                     ->schema([
                         Forms\Components\Grid::make(3)
                             ->schema([
@@ -175,9 +202,11 @@ class WeddingResource extends Resource
                                     ->default(false),
                             ]),
                     ]),
-                // Inne sekcje formularza (Strefa Dodatkowa, Podgląd zdjęcia, itd.) pozostają bez zmian
+
+                // Strefa Dodatkowa - ukryta dla uproszczonych typów
                 Forms\Components\Section::make('Strefa Dodatkowa')
                     ->description('Dodatkowe informacje i szczegóły')
+                    ->hidden(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
                     ->schema([
                         Forms\Components\Grid::make(3)
                             ->schema([
@@ -217,36 +246,50 @@ class WeddingResource extends Resource
                             ->image()
                             ->directory('admin-photos')
                             ->nullable(),
+                        Forms\Components\TextInput::make('skad_nas_znalazliscie')
+                            ->label('Skąd nas znaleźliście?')
+                            ->placeholder('Np. Google, polecenie, social media...')
+                            ->nullable(),
                     ]),
-                    Forms\Components\Actions::make([
-                        Forms\Components\Actions\Action::make('Pobierz PDF')
-                            ->label('Generuj Umowę PDF')
-                            ->url(function ($record) {
-                                if (!$record) {
-                                    return null;
-                                }
-                                // Pobieramy umowę na podstawie wedding_id
-                                $umowa = \App\Models\Umowa::where('wedding_id', $record->id)->first();
-                                return $umowa ? route('umowa.pdf', $umowa->id) : null;
-                            })
-                            ->hidden(function ($record) {
-                                if (!$record) {
-                                    return true;
-                                }
-                                // Ukryj przycisk, jeżeli nie ma powiązanej umowy
-                                return !\App\Models\Umowa::where('wedding_id', $record->id)->exists();
-                            })
-                            ->openUrlInNewTab()
-                            ->icon('heroicon-o-folder-arrow-down'),
-                    ]),
-                    
-                    
+
+                // Uwagi dla wszystkich typów
+                Forms\Components\Textarea::make('uwagi_dla_wszystkich')
+                    ->label('Uwagi')
+                    ->visible(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
+                    ->rows(3)
+                    ->placeholder('Dodaj dodatkowe informacje')
+                    ->maxLength(500),
+
+                // Akcje i podgląd zdjęcia (tylko dla standardowych typów)
+                Forms\Components\Actions::make([
+                    Forms\Components\Actions\Action::make('Pobierz PDF')
+                        ->label('Generuj Umowę PDF')
+                        ->url(function ($record) {
+                            if (!$record) {
+                                return null;
+                            }
+                            // Pobieramy umowę na podstawie wedding_id
+                            $umowa = \App\Models\Umowa::where('wedding_id', $record->id)->first();
+                            return $umowa ? route('umowa.pdf', $umowa->id) : null;
+                        })
+                        ->hidden(function ($record, callable $get) {
+                            if (!$record || in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu'])) {
+                                return true;
+                            }
+                            // Ukryj przycisk, jeżeli nie ma powiązanej umowy
+                            return !\App\Models\Umowa::where('wedding_id', $record->id)->exists();
+                        })
+                        ->openUrlInNewTab()
+                        ->icon('heroicon-o-folder-arrow-down'),
+                ])
+                ->hidden(fn (callable $get) => in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu'])),
+
                 Forms\Components\Section::make('Podgląd zdjęcia')
-                    ->hidden(fn ($record) => !$record || !$record->photo)
+                    ->hidden(fn ($record, callable $get) => !$record || !$record->photo || in_array($get('typ_zamowienia'), ['event', 'rezerwacja_terminu']))
                     ->schema([
                         Forms\Components\Placeholder::make('photo_preview')
                             ->content(fn ($record) => new \Illuminate\Support\HtmlString(
-                                '<img src="' . asset('storage/' . $record->photo) . '" alt="Zdjęcie pary" 
+                                '<img src="' . asset('storage/' . $record->photo) . '" alt="Zdjęcie pary"
                                 style="max-width: 40%; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">'
                             ))
                             ->disableLabel(),
