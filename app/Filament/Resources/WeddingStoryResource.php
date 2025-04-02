@@ -69,12 +69,12 @@ class WeddingStoryResource extends Resource
                 ->helperText('Niższa wartość = wyższa pozycja')
                 ->visible(fn (callable $get) => $get('is_public') == 1),
             // Dodane pola wyświetlane tylko gdy historia jest publiczna
-            Forms\Components\Textarea::make('additional_text')
-                ->label('Dodatkowy opis')
-                ->visible(fn (callable $get) => $get('is_public') == 1),
             Forms\Components\TextInput::make('extra_gallery_link')
                 ->label('Dodatkowy link do galerii')
                 ->url()
+                ->visible(fn (callable $get) => $get('is_public') == 1),
+            Forms\Components\RichEditor::make('additional_text')
+                ->label('Dodatkowy opis')
                 ->visible(fn (callable $get) => $get('is_public') == 1),
             Forms\Components\Section::make('Visualizacja')
                 ->visible(fn (callable $get) => $get('thumbnail'))
