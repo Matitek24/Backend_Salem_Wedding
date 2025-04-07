@@ -17,19 +17,24 @@ class WeddingController extends Controller
         $wedding = Wedding::findOrFail($id);
         return response()->json($wedding);
     }
+
     public function checkAvailability(Request $request)
     {
         // Walidacja danych wejściowych
         $validated = $request->validate([
-            'weddingDate' => 'required|date',
-            'email'       => 'required|email',
-            'packages'    => 'required|array',
-            'packages.*'  => 'string|in:foto,film,fotoplener'
+            'weddingDate'    => 'required|date',
+            'email'          => 'required|email',
+            'packages'       => 'required|array',
+            'packages.*'     => 'string|in:foto,film,fotoplener',
+            'first_name'     => 'nullable|string|max:255',
+            'miejscowosc'  => 'nullable|string|max:255',
         ]);
 
         $date              = $validated['weddingDate'];
         $email             = $validated['email'];
         $requestedPackages = $validated['packages'];
+        $clientName        = $validated['first_name'] ?? 'Nieznane imię';
+        $clientAddress     = $validated['miejscowosc'] ?? 'Brak adresu';
 
         // Pobierz wszystkie rezerwacje na ten dzień
         $bookingsOnDate = Wedding::whereDate('data', $date)->get();
@@ -53,11 +58,10 @@ class WeddingController extends Controller
             }
         }
 
-        // Pakiety, które użytkownik wybrał, ale są niedostępne
         $unavailablePackages = [];
         $availablePackages   = [];
         $allPackages         = ['foto', 'film', 'fotoplener'];
-        
+
         foreach ($requestedPackages as $package) {
             if (isset($packageUsage[$package]) && $packageUsage[$package] >= 2) {
                 $unavailablePackages[] = $package;
@@ -66,13 +70,11 @@ class WeddingController extends Controller
             }
         }
 
-        // Znajdź alternatywne pakiety (które nie zostały wybrane, ale są dostępne)
         $alternativePackages = array_filter($allPackages, function ($package) use ($requestedPackages, $packageUsage) {
             return !in_array($package, $requestedPackages) && (!isset($packageUsage[$package]) || $packageUsage[$package] < 2);
         });
 
         if (!empty($unavailablePackages)) {
-            // Termin zajęty dla wybranych pakietów - wysyłamy e-mail z alternatywną propozycją
             Mail::to($email)->send(new TermNotAvailableMail(
                 $date,
                 $unavailablePackages,
@@ -81,17 +83,22 @@ class WeddingController extends Controller
             ));
 
             return response()->json([
-                'available'          => false,
-                'message'            => 'Termin jest zajęty dla wybranych pakietów. Wysłaliśmy wiadomość e-mail.',
+                'available'           => false,
+                'message'             => 'Termin jest zajęty dla wybranych pakietów. Wysłaliśmy wiadomość e-mail.',
                 'unavailablePackages' => $unavailablePackages,
                 'availablePackages'   => array_merge($availablePackages, $alternativePackages)
             ]);
         }
 
-        // Jeśli wszystkie wybrane pakiety są dostępne, wysyłamy standardową ofertę
+        // Wszystkie pakiety są dostępne – wysyłamy oba maile
         Mail::to($email)->send(new TermAvailableMail($date, $requestedPackages));
-        Mail::to('programista@salemstudio.pl')->send(new AdminNotificationMail($email, $date, $requestedPackages));
-
+        Mail::to('programista@salemstudio.pl')->send(new AdminNotificationMail(
+            $email,
+            $clientName,
+            $clientAddress,
+            $date,
+            $requestedPackages
+        ));
 
         return response()->json([
             'available' => true,

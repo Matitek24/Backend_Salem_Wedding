@@ -10,7 +10,8 @@ class TermAvailableMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $weddingDate;
+    public $date;
+    public $requestedPackages;
 
     /**
      * Create a new message instance.
@@ -28,6 +29,9 @@ class TermAvailableMail extends Mailable
     {
         return $this->subject('Termin dostępny - oferta')
                     ->from('no-reply@dpoczta.pl', 'SalemWedding')
-                    ->view('emails.term_available');
+                    ->view('emails.term_available')
+                    ->with([
+                        'date' => $this->date
+                    ]);
     }
 }
