@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\WeddingStoryController;
 use App\Http\Controllers\Api\GalleryController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\UmowaController;
+use App\Http\Controllers\Api\BlogPostController;
 
 Route::post('/submit-form', [FormController::class, 'store']);
 
@@ -47,3 +48,6 @@ Route::post('/umowy', [UmowaController::class, 'store']);
 
 Route::get('/weddings/{wedding_id}', [WeddingController::class, 'show'])
     ->middleware('signed');
+
+Route::get('/blog', [BlogPostController::class, 'index']);
+Route::get('/blog/{id}', [BlogPostController::class, 'show']);

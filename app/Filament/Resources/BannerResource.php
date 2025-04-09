@@ -40,8 +40,10 @@ class BannerResource extends Resource
                     'oferta' => 'Oferta',
                     'testimonials' => 'Testimonials',
                     'historie' => 'Wasze Historie',
-                    'blog' => 'Blog',
+                    'blogMain' => 'Blog',
                     'portfolio' => 'Portfolio',
+                    'polecamy' => 'Polecamy',
+                    'film' => 'Filmy',
                 ])
                 ->required(),
             Hidden::make('sort_order')
@@ -92,8 +94,10 @@ class BannerResource extends Resource
                         'oferta' => 'Oferta',
                         'testimonials' => 'Testimonials',
                         'historie' => 'Wasze Historie',
-                        'blog' => 'Blog',
+                        'blogMain' => 'Blog',
                         'portfolio' => 'Portfolio',
+                        'polecamy' => 'Polecamy',
+                        'filmy' => 'Filmy',
                     ])
             ])
             ->reorderable('sort_order')
