@@ -219,7 +219,7 @@ class UmowaResource extends Resource
                         
                         // Generujemy link do umowy
                         $link = URL::signedRoute('umowa.show', ['wedding_id' => $weddingId]);
-                        $link = str_replace('localhost:8000', 'localhost:3000', $link); // CHWILOWO ZMIENIA NA PORT 3000 RECZNIE !!!!!!!! DO ZMIANY 
+                        $link = str_replace('admin.salemtest2.you2.pl', 'salemtest2.you2.pl', $link); // CHWILOWO ZMIENIA NA PORT 3000 RECZNIE !!!!!!!! DO ZMIANY 
                         
                         Mail::to($recipient)->send(new UmowaLinkMail($link));
                         

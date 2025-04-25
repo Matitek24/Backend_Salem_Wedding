@@ -18,7 +18,7 @@ class BlogPostController extends Controller
     {
         $posts = BlogPost::where('is_published', true)
             ->orderBy('published_at', 'desc')
-            ->paginate(4);
+            ->paginate(9);
         
         return JsonResource::collection($posts);
     }
