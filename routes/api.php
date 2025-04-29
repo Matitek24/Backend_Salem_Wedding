@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\UmowaController;
 use App\Http\Controllers\Api\BlogPostController;
 use App\Http\Controllers\Api\TestimonialController;
+use App\Http\Controllers\Api\RecommendationController;
 
 Route::post('/submit-form', [FormController::class, 'store']);
 
@@ -56,3 +57,7 @@ Route::get('/blog/{id}', [BlogPostController::class, 'show']);
 Route::get('/testimonials', [TestimonialController::class, 'index']);
 Route::get('/testimonials/featured', [TestimonialController::class, 'featured']);
 Route::get('/testimonials/{id}', [TestimonialController::class, 'show']);
+
+Route::get('/recommendations', [RecommendationController::class, 'index']);
+Route::get('/recommendations/categories', [RecommendationController::class, 'categories']);
+Route::get('/recommendations/{id}', [RecommendationController::class, 'show']);
